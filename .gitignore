@@ -21,9 +21,10 @@
 /.venv/
 
 # Project
-/docs/*
 /mlruns/*
 /outputs/*
+/data/*
+/logs/*
 !**/.gitkeep
 
 # Python

@@ -1,0 +1,139 @@
+{
+  "files_in_context": [
+    {
+      "path": "README.md",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1764916274333,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "notebooks/01_eda.ipynb",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1764916277114,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "data/data-dictionary.txt",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1764916279320,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "pyproject.toml",
+      "record_state": "stale",
+      "record_source": "read_tool",
+      "cline_read_date": 1764916281514,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/ferocia_mlops_prediction/__init__.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1764916284086,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/ferocia_mlops_prediction/preprocessing/__init__.py",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1764916353156,
+      "cline_edit_date": 1764916353156,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/ferocia_mlops_prediction/preprocessing/config.py",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1764916368667,
+      "cline_edit_date": 1764916368667,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/ferocia_mlops_prediction/preprocessing/data_preprocessing.py",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1764916435078,
+      "cline_edit_date": 1764916435078,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/ferocia_mlops_prediction/preprocessing/run_preprocessing.py",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1764916450116,
+      "cline_edit_date": 1764916450116,
+      "user_edit_date": null
+    },
+    {
+      "path": "pyproject.toml",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1764916456827,
+      "cline_edit_date": 1764916456827,
+      "user_edit_date": null
+    },
+    {
+      "path": "tests/test_preprocessing.py",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1764916489750,
+      "cline_edit_date": 1764916489750,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/ferocia_mlops_prediction/preprocessing/README.md",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1764916558064,
+      "cline_edit_date": 1764916558064,
+      "user_edit_date": null
+    },
+    {
+      "path": "data/processed/preprocessing_metadata.json",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1764916565771,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    }
+  ],
+  "model_usage": [
+    {
+      "ts": 1764916227069,
+      "model_id": "global-claude-haiku-4.5",
+      "model_provider_id": "litellm",
+      "mode": "plan"
+    },
+    {
+      "ts": 1764916274595,
+      "model_id": "au-claude-sonnet-4.5",
+      "model_provider_id": "litellm",
+      "mode": "plan"
+    },
+    {
+      "ts": 1764916343172,
+      "model_id": "au-claude-sonnet-4.5",
+      "model_provider_id": "litellm",
+      "mode": "act"
+    }
+  ],
+  "environment_history": [
+    {
+      "ts": 1764916227068,
+      "os_name": "darwin",
+      "os_version": "25.1.0",
+      "os_arch": "arm64",
+      "host_name": "Visual Studio Code",
+      "host_version": "1.106.3",
+      "cline_version": "3.40.0"
+    }
+  ]
+}
