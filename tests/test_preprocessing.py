@@ -351,5 +351,5 @@ class TestPreprocessingPipeline:
             metadata = json.load(f)
 
         assert "original_columns" in metadata
-        assert "processed_columns" in metadata
+        assert "columns_after_processing" in metadata
         assert metadata["train_samples"] == len(x_train)
