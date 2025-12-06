@@ -342,7 +342,7 @@ class PreprocessingPipeline:
                     f"Completed feature engineering, added features: {self.metadata.engineered_features}"
                 )
 
-            self.metadata.processed_columns = df.columns.tolist()
+            self.metadata.columns_after_processing = df.columns.tolist()
 
             # Step 6: Split data
             x_train, x_test, y_train, y_test = self.data_splitter.split_data(
@@ -416,7 +416,7 @@ class PreprocessingPipeline:
 
         metadata_dict: dict[str, Any] = {
             "original_columns": self.metadata.original_columns,
-            "columns_after_processing": self.metadata.processed_columns,
+            "columns_after_processing": self.metadata.columns_after_processing,
             "engineered_features": self.metadata.engineered_features,
             "target_column": self.data_config.target_column,
             "train_samples": self.metadata.train_samples,

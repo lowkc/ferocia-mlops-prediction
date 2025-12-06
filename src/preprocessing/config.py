@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict
+from typing import Any, Dict
 
 import yaml
 
@@ -70,11 +70,15 @@ class PreprocessingMetadata:
         original_columns: List of column names in raw dataset.
         columns_after_processing: List of column names after preprocessing.
         engineered_features: List of newly created feature names.
+        train_samples: Number of samples in training set.
+        test_samples: Number of samples in test set.
     """
 
     original_columns: list[str] = field(default_factory=list)
     columns_after_processing: list[str] = field(default_factory=list)
     engineered_features: list[str] = field(default_factory=list)
+    train_samples: int = 0
+    test_samples: int = 0
 
 
 def load_config(config_path: str | Path) -> tuple[DataConfig, PreprocessingConfig]:
@@ -92,7 +96,7 @@ def load_config(config_path: str | Path) -> tuple[DataConfig, PreprocessingConfi
         yaml.YAMLError: If the YAML is malformed.
     """
 
-    def get_and_validate_dict(config_dict: Dict, key: str) -> None:
+    def get_and_validate_dict(config_dict: Dict[str, Any], key: str) -> Dict:
         """Retrieve a key's value from config_dict and validate it's a dict."""
         value = config_dict.get(key)
         if not isinstance(value, dict):
