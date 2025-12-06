@@ -46,7 +46,8 @@ class PreprocessingConfig:
     """Configuration for preprocessing steps.
 
     Attributes:
-        handle_missing: Whether to handle missing values.
+        handle_missing: Whether to handle missing values by imputing with the mean.
+        drop_duplicates: Whether to drop duplicate rows from the dataset.
         engineer_features: Whether to perform feature engineering.
         encode_categoricals: Whether to encode categorical variables.
         log_transform_threshold: Threshold for log-transforming numerical features.
@@ -54,6 +55,7 @@ class PreprocessingConfig:
     """
 
     handle_missing: bool = True
+    drop_duplicates: bool = True
     engineer_features: bool = True
     encode_categoricals: bool = True
     log_transform_threshold: float = 1.0
@@ -66,16 +68,12 @@ class PreprocessingMetadata:
 
     Attributes:
         original_columns: List of column names in raw dataset.
-        processed_columns: List of column names after preprocessing.
-        binary_columns: Columns that were binary encoded.
-        categorical_columns: Columns that were one-hot encoded.
+        columns_after_processing: List of column names after preprocessing.
         engineered_features: List of newly created feature names.
     """
 
     original_columns: list[str] = field(default_factory=list)
-    processed_columns: list[str] = field(default_factory=list)
-    binary_columns: list[str] = field(default_factory=list)
-    categorical_columns: list[str] = field(default_factory=list)
+    columns_after_processing: list[str] = field(default_factory=list)
     engineered_features: list[str] = field(default_factory=list)
 
 

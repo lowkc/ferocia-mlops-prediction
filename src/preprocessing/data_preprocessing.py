@@ -65,6 +65,75 @@ class DataCleaner:
         """
         self.logger = logger
 
+    def check_missing_values(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Check for and report missing values.
+
+        Args:
+            df: Input DataFrame.
+
+        Returns:
+            Input DataFrame (unchanged).
+        """
+        self.logger.info("Checking for missing values")
+        missing_counts = df.isna().sum()
+        total_missing = missing_counts.sum()
+
+        if total_missing > 0:
+            self.logger.warning(f"Found {total_missing} missing values")
+            for col, count in missing_counts[missing_counts > 0].items():
+                self.logger.warning(f"  {col}: {count} missing values")
+        else:
+            self.logger.info("No missing values found")
+
+        return df
+
+    def impute_missing_values_with_mean(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Impute missing values in the DataFrame with the mean.
+
+        Args:
+            df: Input DataFrame.
+
+        Returns:
+            DataFrame with missing values imputed.
+        """
+        # We use mean as an example here, but other strategies could be applied such as mode or median.
+        # Ideally the function would be more flexible to take in different strategies per column.
+        numeric_cols = df.select_dtypes(include=["number"]).columns
+        for col in numeric_cols:
+            if df[col].isna().sum() > 0:
+                mean_value = df[col].mean()
+                df.fillna({col: mean_value}, inplace=True)
+                self.logger.info(f"Imputed missing values in {col} with mean: {mean_value}")
+
+        return df
+
+    def drop_duplicate_rows(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Drop duplicate rows from the DataFrame.
+
+        Args:
+            df: Input DataFrame.
+
+        Returns:
+            Input DataFrame with duplicate rows removed.
+        """
+        duplicate_rows = df.duplicated()
+        if duplicate_rows.sum():
+            self.logger.info(f"Dropping {duplicate_rows.sum()} duplicate rows from data")
+            df = df.drop_duplicates()
+        return df
+
+
+class FeatureEngineer:
+    """Handles feature engineering and encoding operations."""
+
+    def __init__(self, logger: logging.Logger) -> None:
+        """Initialise FeatureEngineer.
+
+        Args:
+            logger: Logger instance for tracking operations.
+        """
+        self.logger = logger
+
     def transform_pdays(self, df: pd.DataFrame) -> pd.DataFrame:
         """Transform pdays feature into two features.
 
@@ -100,96 +169,30 @@ class DataCleaner:
         )
         return df
 
-    def check_missing_values(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Check for and report missing values.
+    def total_contacts(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Create total_contacts feature as sum of all previous contacts.
 
         Args:
-            df: Input DataFrame.
+            df: Input DataFrame with "campaign" and "previous" columns.
 
         Returns:
-            Input DataFrame (unchanged).
+            DataFrame with additional "total contacts" column (numeric).
         """
-        self.logger.info("Checking for missing values")
-        missing_counts = df.isna().sum()
-        total_missing = missing_counts.sum()
+        self.logger.info("Creating total_contacts feature")
 
-        if total_missing > 0:
-            self.logger.warning(f"Found {total_missing} missing values")
-            for col, count in missing_counts[missing_counts > 0].items():
-                self.logger.warning(f"  {col}: {count} missing values")
-        else:
-            self.logger.info("No missing values found")
-
-        return df
-
-
-class FeatureEngineer:
-    """Handles feature engineering and encoding operations."""
-
-    def __init__(self, logger: logging.Logger) -> None:
-        """Initialise FeatureEngineer.
-
-        Args:
-            logger: Logger instance for tracking operations.
-        """
-        self.logger = logger
-
-    def encode_binary_features(self, df: pd.DataFrame, binary_columns: list[str]) -> pd.DataFrame:
-        """Encode binary features from yes/no to 1/0.
-
-        Args:
-            df: Input DataFrame.
-            binary_columns: List of column names with binary yes/no values.
-
-        Returns:
-            DataFrame with encoded binary features.
-        """
-        self.logger.info(f"Encoding binary features: {binary_columns}")
-
-        for col in binary_columns:
-            if col in df.columns:
-                df[col] = df[col].map({"yes": 1, "no": 0}).astype(int)
-                self.logger.debug(f"Encoded {col}: yes->1, no->0")
-            else:
-                self.logger.warning(f"Binary column {col} not found in DataFrame")
-
-        return df
-
-    def encode_categorical_features(
-        self, df: pd.DataFrame, categorical_columns: list[str]
-    ) -> pd.DataFrame:
-        """One-hot encode categorical features.
-
-        Args:
-            df: Input DataFrame.
-            categorical_columns: List of column names to one-hot encode.
-
-        Returns:
-            DataFrame with one-hot encoded categorical features.
-        """
-        self.logger.info(f"One-hot encoding categorical features: {categorical_columns}")
-
-        # Only encode columns that exist in the DataFrame
-        existing_cols = [col for col in categorical_columns if col in df.columns]
-        missing_cols = set(categorical_columns) - set(existing_cols)
-
-        if missing_cols:
-            self.logger.warning(f"Categorical columns not found: {missing_cols}")
-
-        if not existing_cols:
-            self.logger.warning("No categorical columns to encode")
+        if "campaign" not in df.columns or "previous" not in df.columns:
+            self.logger.warning(
+                "campaign or previous column not found, skipping total_contacts feature"
+            )
             return df
 
-        df = pd.get_dummies(
-            df,
-            columns=existing_cols,
-            prefix=existing_cols,
-            drop_first=True,
-            dtype=int,
-        )
+        df["total_contacts"] = df["campaign"] + df["previous"]
 
-        self.logger.info(f"Created {len(df.columns)} columns after one-hot encoding")
+        self.logger.info("Successfully created total_contacts feature")
         return df
+
+    # Any additional features are engineered here. In the interest of time and scope, feature
+    # engineering has been limited to 2 features only.
 
 
 class DataSplitter:
@@ -221,7 +224,7 @@ class DataSplitter:
             stratify: Whether to use stratified splitting.
 
         Returns:
-            Tuple of (X_train, X_test, y_train, y_test).
+            Tuple of (x_train, x_test, y_train, y_test).
 
         Raises:
             ValueError: If target column not found.
@@ -238,16 +241,16 @@ class DataSplitter:
 
         # Perform train/test split
         stratify_arg = y if stratify else None
-        X_train, X_test, y_train, y_test = train_test_split(
+        x_train, x_test, y_train, y_test = train_test_split(
             X, y, test_size=test_size, random_state=random_seed, stratify=stratify_arg
         )
 
-        self.logger.info(f"Train set: {len(X_train)} samples")
-        self.logger.info(f"Test set: {len(X_test)} samples")
+        self.logger.info(f"Train set: {len(x_train)} samples")
+        self.logger.info(f"Test set: {len(x_test)} samples")
         self.logger.info(f"Train target distribution:\n{y_train.value_counts()}")
         self.logger.info(f"Test target distribution:\n{y_test.value_counts()}")
 
-        return X_train, X_test, y_train, y_test
+        return x_train, x_test, y_train, y_test
 
 
 class PreprocessingPipeline:
@@ -307,7 +310,7 @@ class PreprocessingPipeline:
         """Execute the complete preprocessing pipeline.
 
         Returns:
-            Tuple of (X_train, X_test, y_train, y_test).
+            Tuple of (x_train, x_test, y_train, y_test).
 
         Raises:
             Exception: If any step in the pipeline fails.
@@ -321,27 +324,28 @@ class PreprocessingPipeline:
             df = self.data_loader.load_data(self.data_config.raw_data_path)
             self.metadata.original_columns = df.columns.tolist()
 
-            # Step 2: Check for missing values
+            # Step 2: Validate and clean data
             df = self.data_cleaner.check_missing_values(df)
+            if self.preprocessing_config.handle_missing:
+                df = self.data_cleaner.impute_missing_values_with_mean(df)
+            if self.preprocessing_config.drop_duplicates:
+                df = self.data_cleaner.drop_duplicate_rows(df)
 
-            # Step 3: Transform pdays feature
-            df = self.data_cleaner.transform_pdays(df)
-            self.metadata.engineered_features = ["previous_contact", "days_since_last_contact"]
-
-            # Step 4: Encode binary features
-            binary_columns = ["default", "housing", "loan", "y"]
-            self.metadata.binary_columns = binary_columns
-            df = self.feature_engineer.encode_binary_features(df, binary_columns)
-
-            # Step 5: Encode categorical features
-            categorical_columns = ["job", "marital", "education", "contact", "month", "poutcome"]
-            self.metadata.categorical_columns = categorical_columns
-            df = self.feature_engineer.encode_categorical_features(df, categorical_columns)
+            # Step 3: Feature engineering
+            if self.preprocessing_config.engineer_features:
+                self.logger.info("Starting feature engineering")
+                df = self.feature_engineer.transform_pdays(df)
+                self.metadata.engineered_features = ["previous_contact", "days_since_last_contact"]
+                df = self.feature_engineer.total_contacts(df)
+                self.metadata.engineered_features.append("total_contacts")
+                self.logger.info(
+                    f"Completed feature engineering, added features: {self.metadata.engineered_features}"
+                )
 
             self.metadata.processed_columns = df.columns.tolist()
 
             # Step 6: Split data
-            X_train, X_test, y_train, y_test = self.data_splitter.split_data(
+            x_train, x_test, y_train, y_test = self.data_splitter.split_data(
                 df,
                 target_column="y",
                 test_size=self.data_config.test_size,
@@ -349,11 +353,11 @@ class PreprocessingPipeline:
                 stratify=self.data_config.stratify,
             )
 
-            self.metadata.train_samples = len(X_train)
-            self.metadata.test_samples = len(X_test)
+            self.metadata.train_samples = len(x_train)
+            self.metadata.test_samples = len(x_test)
 
             # Step 7: Save processed data
-            self._save_processed_data(X_train, X_test, y_train, y_test)
+            self._save_processed_data(x_train, x_test, y_train, y_test)
 
             # Step 8: Save metadata
             if self.preprocessing_config.save_metadata:
@@ -363,7 +367,7 @@ class PreprocessingPipeline:
             self.logger.info("Preprocessing pipeline completed successfully")
             self.logger.info("=" * 80)
 
-            return X_train, X_test, y_train, y_test
+            return x_train, x_test, y_train, y_test
 
         except Exception as e:
             self.logger.error(f"Pipeline failed: {e}", exc_info=True)
@@ -371,16 +375,16 @@ class PreprocessingPipeline:
 
     def _save_processed_data(
         self,
-        X_train: pd.DataFrame,
-        X_test: pd.DataFrame,
+        x_train: pd.DataFrame,
+        x_test: pd.DataFrame,
         y_train: pd.Series,
         y_test: pd.Series,
     ) -> None:
         """Save processed datasets to CSV files.
 
         Args:
-            X_train: Training features.
-            X_test: Test features.
+            x_train: Training features.
+            x_test: Test features.
             y_train: Training target.
             y_test: Test target.
         """
@@ -390,10 +394,10 @@ class PreprocessingPipeline:
         self.data_config.output_dir.mkdir(parents=True, exist_ok=True)
 
         # Combine features and target for saving
-        train_data = X_train.copy()
+        train_data = x_train.copy()
         train_data["y"] = y_train.values
 
-        test_data = X_test.copy()
+        test_data = x_test.copy()
         test_data["y"] = y_test.values
 
         # Save to CSV
@@ -412,9 +416,7 @@ class PreprocessingPipeline:
 
         metadata_dict: dict[str, Any] = {
             "original_columns": self.metadata.original_columns,
-            "processed_columns": self.metadata.processed_columns,
-            "binary_columns": self.metadata.binary_columns,
-            "categorical_columns": self.metadata.categorical_columns,
+            "columns_after_processing": self.metadata.processed_columns,
             "engineered_features": self.metadata.engineered_features,
             "target_column": self.data_config.target_column,
             "train_samples": self.metadata.train_samples,

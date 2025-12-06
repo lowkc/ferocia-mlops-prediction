@@ -8,7 +8,6 @@ data:
 
 preprocessing:
   handle_missing: true
+  drop_duplicates: true
   engineer_features: true
-  encode_categoricals: true
-  log_transform_threshold: 1.0
   save_metadata: true  # whether to save preprocessing metadata to logs

@@ -37,6 +37,7 @@ class TestLoadConfig:
             },
             "preprocessing": {
                 "handle_missing": False,
+                "drop_duplicates": True,
                 "engineer_features": True,
                 "encode_categoricals": False,
                 "log_transform_threshold": 0.5,
@@ -60,6 +61,7 @@ class TestLoadConfig:
         # Verify PreprocessingConfig
         assert preprocessing_config.handle_missing is False
         assert preprocessing_config.engineer_features is True
+        assert preprocessing_config.drop_duplicates is True
         assert preprocessing_config.encode_categoricals is False
         assert preprocessing_config.log_transform_threshold == 0.5
 
@@ -186,22 +188,6 @@ class TestDataLoader:
 class TestDataCleaner:
     """Tests for DataCleaner class."""
 
-    def test_transform_pdays(self):
-        """Test pdays transformation."""
-        df = pd.DataFrame({"pdays": [-1, 5, -1, 10, 15]})
-
-        logger = Mock()
-        cleaner = DataCleaner(logger)
-        df_transformed = cleaner.transform_pdays(df)
-
-        assert "pdays" not in df_transformed.columns
-        assert "previous_contact" in df_transformed.columns
-        assert "days_since_last_contact" in df_transformed.columns
-
-        # Check values
-        assert df_transformed["previous_contact"].tolist() == [0, 1, 0, 1, 1]
-        assert df_transformed["days_since_last_contact"].tolist() == [0, 5, 0, 10, 15]
-
     def test_check_missing_values_none(self):
         """Test missing value check with no missing data."""
         df = pd.DataFrame({"col1": [1, 2, 3], "col2": ["a", "b", "c"]})
@@ -224,37 +210,47 @@ class TestDataCleaner:
         assert df.equals(df_result)
         logger.warning.assert_called()
 
+    def test_impute_missing_values_with_mean(self):
+        """Test imputation of missing values with mean."""
+        df = pd.DataFrame({"col1": [1, np.nan, 3], "col2": [4, 5, np.nan]})
+
+        logger = Mock()
+        cleaner = DataCleaner(logger)
+        df_result = cleaner.impute_missing_values_with_mean(df)
+
+        assert df_result["col1"].tolist() == [1.0, 2.0, 3.0]
+        assert df_result["col2"].tolist() == [4.0, 5.0, 4.5]
+        logger.info.assert_called()
+
 
 class TestFeatureEngineer:
     """Tests for FeatureEngineer class."""
 
-    def test_encode_binary_features(self):
-        """Test binary feature encoding."""
-        df = pd.DataFrame(
-            {"binary1": ["yes", "no", "yes"], "binary2": ["no", "yes", "no"], "other": [1, 2, 3]}
-        )
+    def test_transform_pdays(self):
+        """Test pdays transformation."""
+        df = pd.DataFrame({"pdays": [-1, 5, -1, 10, 15]})
 
         logger = Mock()
         engineer = FeatureEngineer(logger)
-        df_encoded = engineer.encode_binary_features(df, ["binary1", "binary2"])
+        df_transformed = engineer.transform_pdays(df)
 
-        assert df_encoded["binary1"].tolist() == [1, 0, 1]
-        assert df_encoded["binary2"].tolist() == [0, 1, 0]
-        assert df_encoded["other"].tolist() == [1, 2, 3]
+        assert "pdays" not in df_transformed.columns
+        assert "previous_contact" in df_transformed.columns
+        assert "days_since_last_contact" in df_transformed.columns
 
-    def test_encode_categorical_features(self):
-        """Test one-hot encoding of categorical features."""
-        df = pd.DataFrame({"cat1": ["a", "b", "a"], "cat2": ["x", "y", "x"], "num": [1, 2, 3]})
+        # Check values
+        assert df_transformed["previous_contact"].tolist() == [0, 1, 0, 1, 1]
+        assert df_transformed["days_since_last_contact"].tolist() == [0, 5, 0, 10, 15]
+
+    def test_total_contacts(self):
+        """Test total_contacts feature creation."""
+        df = pd.DataFrame({"campaign": [1, 2, 3], "previous": [0, 1, 2]})
 
         logger = Mock()
         engineer = FeatureEngineer(logger)
-        df_encoded = engineer.encode_categorical_features(df, ["cat1", "cat2"])
-
-        # Should have drop_first=True, so only n-1 categories per feature
-        assert "cat1_b" in df_encoded.columns
-        assert "cat2_y" in df_encoded.columns
-        assert "num" in df_encoded.columns
-        assert len(df_encoded.columns) == 3  # num + 2 one-hot encoded columns
+        df_transformed = engineer.total_contacts(df)
+        assert "total_contacts" in df_transformed.columns
+        assert df_transformed["total_contacts"].tolist() == [1, 3, 5]
 
 
 class TestDataSplitter:
@@ -268,16 +264,16 @@ class TestDataSplitter:
 
         logger = Mock()
         splitter = DataSplitter(logger)
-        X_train, X_test, y_train, y_test = splitter.split_data(
+        x_train, x_test, y_train, y_test = splitter.split_data(
             df, target_column="target", test_size=0.2, random_seed=42, stratify=True
         )
 
-        assert len(X_train) == 80
-        assert len(X_test) == 20
+        assert len(x_train) == 80
+        assert len(x_test) == 20
         assert len(y_train) == 80
         assert len(y_test) == 20
-        assert "target" not in X_train.columns
-        assert "target" not in X_test.columns
+        assert "target" not in x_train.columns
+        assert "target" not in x_test.columns
 
     def test_split_data_missing_target(self):
         """Test error handling for missing target column."""
@@ -324,11 +320,12 @@ class TestPreprocessingPipeline:
         data_config = DataConfig(
             raw_data_path=Path("dummy.csv"),
             output_dir=tmp_path / "processed",
-            test_size=0.2,
+            test_size=0.3,
             random_seed=42,
         )
         preprocessing_config = PreprocessingConfig(
             handle_missing=True,
+            drop_duplicates=True,
             engineer_features=True,
             encode_categoricals=True,
             log_transform_threshold=1.0,
@@ -336,13 +333,13 @@ class TestPreprocessingPipeline:
 
         # Run pipeline
         pipeline = PreprocessingPipeline(data_config, preprocessing_config)
-        X_train, X_test, y_train, y_test = pipeline.run()
+        x_train, x_test, y_train, y_test = pipeline.run()
 
         # Verify outputs
-        assert len(X_train) > 0
-        assert len(X_test) > 0
-        assert len(y_train) == len(X_train)
-        assert len(y_test) == len(X_test)
+        assert len(x_train) > 0
+        assert len(x_test) > 0
+        assert len(y_train) == len(x_train)
+        assert len(y_test) == len(x_test)
 
         # Verify files were created
         assert (tmp_path / "processed" / "train.csv").exists()
@@ -355,4 +352,4 @@ class TestPreprocessingPipeline:
 
         assert "original_columns" in metadata
         assert "processed_columns" in metadata
-        assert metadata["train_samples"] == len(X_train)
+        assert metadata["train_samples"] == len(x_train)
