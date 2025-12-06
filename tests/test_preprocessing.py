@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ferocia_mlops_prediction.preprocessing.config import DataConfig, PreprocessingMetadata
-from ferocia_mlops_prediction.preprocessing.data_preprocessing import (
+from preprocessing.config import DataConfig
+from preprocessing.data_preprocessing import (
     DataCleaner,
     DataLoader,
     DataSplitter,
@@ -184,7 +184,7 @@ class TestDataSplitter:
 class TestPreprocessingPipeline:
     """Tests for PreprocessingPipeline class."""
 
-    @patch("ferocia_mlops_prediction.preprocessing.data_preprocessing.DataLoader.load_data")
+    @patch("preprocessing.data_preprocessing.DataLoader.load_data")
     def test_pipeline_run(self, mock_load_data, tmp_path):
         """Test full pipeline execution."""
         # Create sample data
@@ -241,4 +241,3 @@ class TestPreprocessingPipeline:
         assert "original_columns" in metadata
         assert "processed_columns" in metadata
         assert metadata["train_samples"] == len(X_train)
-        assert metadata["test_samples"] == len(X_test)

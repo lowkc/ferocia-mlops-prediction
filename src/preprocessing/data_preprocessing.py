@@ -8,14 +8,14 @@ from typing import Any
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from ferocia_mlops_prediction.preprocessing.config import DataConfig, PreprocessingMetadata
+from preprocessing.config import DataConfig, PreprocessingMetadata, PreprocessingConfig
 
 
 class DataLoader:
     """Handles loading raw data from CSV files."""
 
     def __init__(self, logger: logging.Logger) -> None:
-        """Initialize DataLoader.
+        """Initialise DataLoader.
 
         Args:
             logger: Logger instance for tracking operations.
@@ -42,12 +42,11 @@ class DataLoader:
             raise FileNotFoundError(f"Data file not found: {file_path}")
 
         try:
-            # Load CSV with semicolon delimiter as per EDA notebook
             df = pd.read_csv(file_path, delimiter=";")
             self.logger.info(f"Successfully loaded {len(df)} rows and {len(df.columns)} columns")
             self.logger.debug(f"Columns: {df.columns.tolist()}")
             return df
-        except pd.errors.EmptyDataError as e:
+        except pd.errors.EmptyDataError:
             self.logger.error(f"Empty data file: {file_path}")
             raise
         except Exception as e:
@@ -59,7 +58,7 @@ class DataCleaner:
     """Handles data cleaning operations."""
 
     def __init__(self, logger: logging.Logger) -> None:
-        """Initialize DataCleaner.
+        """Initialise DataCleaner.
 
         Args:
             logger: Logger instance for tracking operations.
@@ -69,10 +68,11 @@ class DataCleaner:
     def transform_pdays(self, df: pd.DataFrame) -> pd.DataFrame:
         """Transform pdays feature into two features.
 
-        Based on EDA, pdays has value -1 for customers not previously contacted.
-        Split into:
-        - previous_contact: Binary flag (0 if not contacted, 1 if contacted)
-        - days_since_last_contact: Days since contact (0 if not contacted, otherwise pdays value)
+        pdays is the number of days that passed since last contact and has value -1 for customers not
+        previously contacted. We split this into two features to separate the information into a binary
+        value and a continuous value:
+            - previous_contact: Binary flag (0 if not contacted, 1 if contacted)
+            - days_since_last_contact: Days since contact (0 if not contacted, otherwise pdays value)
 
         Args:
             df: Input DataFrame with pdays column.
@@ -95,7 +95,9 @@ class DataCleaner:
         # Drop original pdays column
         df = df.drop("pdays", axis=1)
 
-        self.logger.info("Successfully transformed pdays into previous_contact and days_since_last_contact")
+        self.logger.info(
+            "Successfully transformed pdays into previous_contact and days_since_last_contact"
+        )
         return df
 
     def check_missing_values(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -125,16 +127,14 @@ class FeatureEngineer:
     """Handles feature engineering and encoding operations."""
 
     def __init__(self, logger: logging.Logger) -> None:
-        """Initialize FeatureEngineer.
+        """Initialise FeatureEngineer.
 
         Args:
             logger: Logger instance for tracking operations.
         """
         self.logger = logger
 
-    def encode_binary_features(
-        self, df: pd.DataFrame, binary_columns: list[str]
-    ) -> pd.DataFrame:
+    def encode_binary_features(self, df: pd.DataFrame, binary_columns: list[str]) -> pd.DataFrame:
         """Encode binary features from yes/no to 1/0.
 
         Args:
@@ -196,7 +196,7 @@ class DataSplitter:
     """Handles train/test splitting of data."""
 
     def __init__(self, logger: logging.Logger) -> None:
-        """Initialize DataSplitter.
+        """Initialise DataSplitter.
 
         Args:
             logger: Logger instance for tracking operations.
@@ -253,21 +253,20 @@ class DataSplitter:
 class PreprocessingPipeline:
     """Orchestrates the complete data preprocessing pipeline."""
 
-    def __init__(self, config: DataConfig) -> None:
-        """Initialize preprocessing pipeline.
+    def __init__(self, data_config: DataConfig, preprocessing_config: PreprocessingConfig) -> None:
+        """Initialise preprocessing pipeline.
 
         Args:
             config: Configuration object for the pipeline.
         """
-        self.config = config
-        self.metadata = PreprocessingMetadata(
-            test_size=config.test_size, random_seed=config.random_seed
-        )
+        self.data_config = data_config
+        self.preprocessing_config = preprocessing_config
+        self.metadata = PreprocessingMetadata()
 
         # Setup logging
         self.logger = self._setup_logger()
 
-        # Initialize components
+        # Initialise components
         self.data_loader = DataLoader(self.logger)
         self.data_cleaner = DataCleaner(self.logger)
         self.feature_engineer = FeatureEngineer(self.logger)
@@ -280,14 +279,14 @@ class PreprocessingPipeline:
             Configured logger instance.
         """
         logger = logging.getLogger("preprocessing_pipeline")
-        logger.setLevel(self.config.log_level)
+        logger.setLevel(self.data_config.log_level)
 
         # Remove existing handlers to avoid duplicates
         logger.handlers.clear()
 
         # Console handler
         console_handler = logging.StreamHandler()
-        console_handler.setLevel(self.config.log_level)
+        console_handler.setLevel(self.data_config.log_level)
         console_formatter = logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
@@ -319,7 +318,7 @@ class PreprocessingPipeline:
             self.logger.info("=" * 80)
 
             # Step 1: Load data
-            df = self.data_loader.load_data(self.config.raw_data_path)
+            df = self.data_loader.load_data(self.data_config.raw_data_path)
             self.metadata.original_columns = df.columns.tolist()
 
             # Step 2: Check for missing values
@@ -345,9 +344,9 @@ class PreprocessingPipeline:
             X_train, X_test, y_train, y_test = self.data_splitter.split_data(
                 df,
                 target_column="y",
-                test_size=self.config.test_size,
-                random_seed=self.config.random_seed,
-                stratify=self.config.stratify,
+                test_size=self.data_config.test_size,
+                random_seed=self.data_config.random_seed,
+                stratify=self.data_config.stratify,
             )
 
             self.metadata.train_samples = len(X_train)
@@ -357,7 +356,7 @@ class PreprocessingPipeline:
             self._save_processed_data(X_train, X_test, y_train, y_test)
 
             # Step 8: Save metadata
-            if self.config.save_metadata:
+            if self.preprocessing_config.save_metadata:
                 self._save_metadata()
 
             self.logger.info("=" * 80)
@@ -385,10 +384,10 @@ class PreprocessingPipeline:
             y_train: Training target.
             y_test: Test target.
         """
-        self.logger.info(f"Saving processed data to {self.config.output_dir}")
+        self.logger.info(f"Saving processed data to {self.data_config.output_dir}")
 
         # Create output directory
-        self.config.output_dir.mkdir(parents=True, exist_ok=True)
+        self.data_config.output_dir.mkdir(parents=True, exist_ok=True)
 
         # Combine features and target for saving
         train_data = X_train.copy()
@@ -398,8 +397,8 @@ class PreprocessingPipeline:
         test_data["y"] = y_test.values
 
         # Save to CSV
-        train_path = self.config.output_dir / "train.csv"
-        test_path = self.config.output_dir / "test.csv"
+        train_path = self.data_config.output_dir / "train.csv"
+        test_path = self.data_config.output_dir / "test.csv"
 
         train_data.to_csv(train_path, index=False)
         test_data.to_csv(test_path, index=False)
@@ -409,7 +408,7 @@ class PreprocessingPipeline:
 
     def _save_metadata(self) -> None:
         """Save preprocessing metadata to JSON file."""
-        metadata_path = self.config.output_dir / "preprocessing_metadata.json"
+        metadata_path = self.data_config.output_dir / "preprocessing_metadata.json"
 
         metadata_dict: dict[str, Any] = {
             "original_columns": self.metadata.original_columns,
@@ -417,11 +416,11 @@ class PreprocessingPipeline:
             "binary_columns": self.metadata.binary_columns,
             "categorical_columns": self.metadata.categorical_columns,
             "engineered_features": self.metadata.engineered_features,
-            "target_column": self.metadata.target_column,
+            "target_column": self.data_config.target_column,
             "train_samples": self.metadata.train_samples,
             "test_samples": self.metadata.test_samples,
-            "test_size": self.metadata.test_size,
-            "random_seed": self.metadata.random_seed,
+            "test_size": self.data_config.test_size,
+            "random_seed": self.data_config.random_seed,
         }
 
         with open(metadata_path, "w") as f:

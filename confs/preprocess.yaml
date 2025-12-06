@@ -1,0 +1,14 @@
+data:
+  raw_path: "data/raw/dataset.csv"
+  processed_dir: "data/processed"
+  target_column: "y"
+  test_size: 0.2
+  random_state: 42
+  stratify: true
+
+preprocessing:
+  handle_missing: true
+  engineer_features: true
+  encode_categoricals: true
+  log_transform_threshold: 1.0
+  save_metadata: true  # whether to save preprocessing metadata to logs
