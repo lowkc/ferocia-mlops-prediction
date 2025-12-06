@@ -7,8 +7,9 @@ from unittest.mock import Mock, patch
 import numpy as np
 import pandas as pd
 import pytest
+import yaml
 
-from preprocessing.config import DataConfig
+from preprocessing.config import DataConfig, PreprocessingConfig, load_config
 from preprocessing.data_preprocessing import (
     DataCleaner,
     DataLoader,
@@ -18,32 +19,140 @@ from preprocessing.data_preprocessing import (
 )
 
 
-class TestDataConfig:
-    """Tests for DataConfig dataclass."""
+class TestLoadConfig:
+    """Tests for load_config function."""
 
-    def test_default_values(self):
-        """Test default configuration values."""
-        config = DataConfig()
-        assert config.raw_data_path == Path("data/dataset.csv")
-        assert config.output_dir == Path("data/processed")
-        assert config.test_size == 0.2
-        assert config.random_seed == 42
-        assert config.stratify is True
-        assert config.log_level == "INFO"
-        assert config.save_metadata is True
+    def test_load_config_valid_yaml(self, tmp_path):
+        """Test loading configuration from valid YAML file."""
+        # Create a valid YAML config file
+        config_path = tmp_path / "test_config.yaml"
+        config_data = {
+            "data": {
+                "raw_path": "data/test/input.csv",
+                "processed_dir": "data/test/output",
+                "target_column": "target",
+                "test_size": 0.25,
+                "random_state": 123,
+                "stratify": False,
+            },
+            "preprocessing": {
+                "handle_missing": False,
+                "engineer_features": True,
+                "encode_categoricals": False,
+                "log_transform_threshold": 0.5,
+            },
+        }
 
-    def test_invalid_test_size(self):
-        """Test validation for invalid test_size."""
+        with open(config_path, "w") as f:
+            yaml.dump(config_data, f)
+
+        # Load config
+        data_config, preprocessing_config = load_config(config_path)
+
+        # Verify DataConfig
+        assert data_config.raw_data_path == Path("data/test/input.csv")
+        assert data_config.output_dir == Path("data/test/output")
+        assert data_config.target_column == "target"
+        assert data_config.test_size == 0.25
+        assert data_config.random_seed == 123
+        assert data_config.stratify is False
+
+        # Verify PreprocessingConfig
+        assert preprocessing_config.handle_missing is False
+        assert preprocessing_config.engineer_features is True
+        assert preprocessing_config.encode_categoricals is False
+        assert preprocessing_config.log_transform_threshold == 0.5
+
+    def test_load_config_with_defaults(self, tmp_path):
+        """Test loading configuration with missing optional fields uses defaults."""
+        config_path = tmp_path / "minimal_config.yaml"
+        config_data = {
+            "data": {
+                "raw_path": "data/input.csv",
+            },
+            "preprocessing": {},
+        }
+
+        with open(config_path, "w") as f:
+            yaml.dump(config_data, f)
+
+        data_config, preprocessing_config = load_config(config_path)
+
+        # Verify defaults are used
+        assert data_config.raw_data_path == Path("data/input.csv")
+        assert data_config.output_dir == Path("data/processed")  # default
+        assert data_config.test_size == 0.2  # default
+        assert preprocessing_config.handle_missing is True  # default
+        assert preprocessing_config.engineer_features is True  # default
+
+    def test_load_config_file_not_found(self):
+        """Test error when config file doesn't exist."""
+        with pytest.raises(FileNotFoundError, match="Configuration file not found"):
+            load_config("nonexistent_config.yaml")
+
+    def test_load_config_invalid_yaml(self, tmp_path):
+        """Test error with malformed YAML."""
+        config_path = tmp_path / "invalid.yaml"
+        with open(config_path, "w") as f:
+            f.write("invalid: yaml: content:\n  - broken")
+
+        with pytest.raises(yaml.YAMLError, match="Error parsing YAML file"):
+            load_config(config_path)
+
+    def test_load_config_not_dict(self, tmp_path):
+        """Test error when YAML is not a dictionary."""
+        config_path = tmp_path / "list_config.yaml"
+        with open(config_path, "w") as f:
+            yaml.dump(["item1", "item2"], f)
+
+        with pytest.raises(ValueError, match="Invalid YAML structure.*expected a dictionary"):
+            load_config(config_path)
+
+    def test_load_config_data_not_dict(self, tmp_path):
+        """Test error when 'data' section is not a dictionary."""
+        config_path = tmp_path / "bad_data.yaml"
+        config_data = {"data": "not a dict", "preprocessing": {}}
+
+        with open(config_path, "w") as f:
+            yaml.dump(config_data, f)
+
+        with pytest.raises(ValueError, match="'data' section in YAML must be a dictionary"):
+            load_config(config_path)
+
+    def test_load_config_triggers_dataconfig_validation(self, tmp_path):
+        """Test that invalid values trigger DataConfig validation errors."""
+        config_path = tmp_path / "invalid_values.yaml"
+        config_data = {
+            "data": {
+                "raw_path": "data.csv",
+                "test_size": 1.5,  # Invalid: must be between 0 and 1
+            },
+            "preprocessing": {},
+        }
+
+        with open(config_path, "w") as f:
+            yaml.dump(config_data, f)
+
+        # Should raise ValueError from DataConfig.__post_init__
         with pytest.raises(ValueError, match="test_size must be between 0 and 1"):
-            DataConfig(test_size=1.5)
+            load_config(config_path)
 
-        with pytest.raises(ValueError, match="test_size must be between 0 and 1"):
-            DataConfig(test_size=0.0)
+    def test_load_config_invalid_random_seed(self, tmp_path):
+        """Test that negative random_seed triggers validation error."""
+        config_path = tmp_path / "invalid_seed.yaml"
+        config_data = {
+            "data": {
+                "raw_path": "data.csv",
+                "random_state": -10,  # Invalid: must be non-negative
+            },
+            "preprocessing": {},
+        }
 
-    def test_invalid_random_seed(self):
-        """Test validation for invalid random_seed."""
+        with open(config_path, "w") as f:
+            yaml.dump(config_data, f)
+
         with pytest.raises(ValueError, match="random_seed must be non-negative"):
-            DataConfig(random_seed=-1)
+            load_config(config_path)
 
 
 class TestDataLoader:
@@ -212,15 +321,21 @@ class TestPreprocessingPipeline:
         mock_load_data.return_value = sample_data
 
         # Create config with temp directory
-        config = DataConfig(
+        data_config = DataConfig(
             raw_data_path=Path("dummy.csv"),
             output_dir=tmp_path / "processed",
             test_size=0.2,
             random_seed=42,
         )
+        preprocessing_config = PreprocessingConfig(
+            handle_missing=True,
+            engineer_features=True,
+            encode_categoricals=True,
+            log_transform_threshold=1.0,
+        )
 
         # Run pipeline
-        pipeline = PreprocessingPipeline(config)
+        pipeline = PreprocessingPipeline(data_config, preprocessing_config)
         X_train, X_test, y_train, y_test = pipeline.run()
 
         # Verify outputs

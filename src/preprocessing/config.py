@@ -20,7 +20,7 @@ class DataConfig:
         log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
     """
 
-    raw_data_path: Path = Path("data/dataset.csv")
+    raw_data_path: Path = Path("data/raw/dataset.csv")
     output_dir: Path = Path("data/processed")
     target_column: str = "y"
     test_size: float = 0.2
