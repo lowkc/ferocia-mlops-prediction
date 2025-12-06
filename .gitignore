@@ -26,6 +26,7 @@
 /data/*
 /logs/*
 !**/.gitkeep
+!**/.log
 
 # Python
 *.py[cod]
