@@ -1,0 +1,62 @@
+2025-12-05 17:35:06,669 - preprocessing_pipeline - INFO - ================================================================================
+2025-12-05 17:35:06,669 - preprocessing_pipeline - INFO - Starting data preprocessing pipeline
+2025-12-05 17:35:06,669 - preprocessing_pipeline - INFO - ================================================================================
+2025-12-05 17:35:06,669 - preprocessing_pipeline - INFO - Loading data from data/dataset.csv
+2025-12-05 17:35:06,716 - preprocessing_pipeline - INFO - Successfully loaded 45211 rows and 17 columns
+2025-12-05 17:35:06,716 - preprocessing_pipeline - INFO - Checking for missing values
+2025-12-05 17:35:06,726 - preprocessing_pipeline - INFO - No missing values found
+2025-12-05 17:35:06,726 - preprocessing_pipeline - INFO - Transforming pdays feature
+2025-12-05 17:35:06,747 - preprocessing_pipeline - INFO - Successfully transformed pdays into previous_contact and days_since_last_contact
+2025-12-05 17:35:06,748 - preprocessing_pipeline - INFO - Encoding binary features: ['default', 'housing', 'loan', 'y']
+2025-12-05 17:35:06,753 - preprocessing_pipeline - INFO - One-hot encoding categorical features: ['job', 'marital', 'education', 'contact', 'month', 'poutcome']
+2025-12-05 17:35:06,772 - preprocessing_pipeline - INFO - Created 44 columns after one-hot encoding
+2025-12-05 17:35:06,773 - preprocessing_pipeline - INFO - Splitting data: test_size=0.2, stratify=True
+2025-12-05 17:35:06,790 - preprocessing_pipeline - INFO - Train set: 36168 samples
+2025-12-05 17:35:06,790 - preprocessing_pipeline - INFO - Test set: 9043 samples
+2025-12-05 17:35:06,793 - preprocessing_pipeline - INFO - Train target distribution:
+y
+0    31937
+1     4231
+Name: count, dtype: int64
+2025-12-05 17:35:06,793 - preprocessing_pipeline - INFO - Test target distribution:
+y
+0    7985
+1    1058
+Name: count, dtype: int64
+2025-12-05 17:35:06,793 - preprocessing_pipeline - INFO - Saving processed data to data/processed
+2025-12-05 17:35:06,993 - preprocessing_pipeline - INFO - Saved training data to data/processed/train.csv
+2025-12-05 17:35:06,993 - preprocessing_pipeline - INFO - Saved test data to data/processed/test.csv
+2025-12-05 17:35:06,993 - preprocessing_pipeline - INFO - Saved preprocessing metadata to data/processed/preprocessing_metadata.json
+2025-12-05 17:35:06,993 - preprocessing_pipeline - INFO - ================================================================================
+2025-12-05 17:35:06,993 - preprocessing_pipeline - INFO - Preprocessing pipeline completed successfully
+2025-12-05 17:35:06,993 - preprocessing_pipeline - INFO - ================================================================================
+2025-12-05 17:35:12,346 - preprocessing_pipeline - INFO - ================================================================================
+2025-12-05 17:35:12,347 - preprocessing_pipeline - INFO - Starting data preprocessing pipeline
+2025-12-05 17:35:12,347 - preprocessing_pipeline - INFO - ================================================================================
+2025-12-05 17:35:12,347 - preprocessing_pipeline - INFO - Checking for missing values
+2025-12-05 17:35:12,347 - preprocessing_pipeline - INFO - No missing values found
+2025-12-05 17:35:12,347 - preprocessing_pipeline - INFO - Transforming pdays feature
+2025-12-05 17:35:12,347 - preprocessing_pipeline - INFO - Successfully transformed pdays into previous_contact and days_since_last_contact
+2025-12-05 17:35:12,347 - preprocessing_pipeline - INFO - Encoding binary features: ['default', 'housing', 'loan', 'y']
+2025-12-05 17:35:12,348 - preprocessing_pipeline - INFO - One-hot encoding categorical features: ['job', 'marital', 'education', 'contact', 'month', 'poutcome']
+2025-12-05 17:35:12,349 - preprocessing_pipeline - INFO - Created 24 columns after one-hot encoding
+2025-12-05 17:35:12,349 - preprocessing_pipeline - INFO - Splitting data: test_size=0.2, stratify=True
+2025-12-05 17:35:12,350 - preprocessing_pipeline - INFO - Train set: 16 samples
+2025-12-05 17:35:12,350 - preprocessing_pipeline - INFO - Test set: 4 samples
+2025-12-05 17:35:12,351 - preprocessing_pipeline - INFO - Train target distribution:
+y
+0    8
+1    8
+Name: count, dtype: int64
+2025-12-05 17:35:12,351 - preprocessing_pipeline - INFO - Test target distribution:
+y
+0    2
+1    2
+Name: count, dtype: int64
+2025-12-05 17:35:12,351 - preprocessing_pipeline - INFO - Saving processed data to /private/var/folders/3j/ct9s5lmn7nz4nf__zp7m_d900000gn/T/pytest-of-kayceelow/pytest-0/test_pipeline_run0/processed
+2025-12-05 17:35:12,352 - preprocessing_pipeline - INFO - Saved training data to /private/var/folders/3j/ct9s5lmn7nz4nf__zp7m_d900000gn/T/pytest-of-kayceelow/pytest-0/test_pipeline_run0/processed/train.csv
+2025-12-05 17:35:12,352 - preprocessing_pipeline - INFO - Saved test data to /private/var/folders/3j/ct9s5lmn7nz4nf__zp7m_d900000gn/T/pytest-of-kayceelow/pytest-0/test_pipeline_run0/processed/test.csv
+2025-12-05 17:35:12,353 - preprocessing_pipeline - INFO - Saved preprocessing metadata to /private/var/folders/3j/ct9s5lmn7nz4nf__zp7m_d900000gn/T/pytest-of-kayceelow/pytest-0/test_pipeline_run0/processed/preprocessing_metadata.json
+2025-12-05 17:35:12,353 - preprocessing_pipeline - INFO - ================================================================================
+2025-12-05 17:35:12,353 - preprocessing_pipeline - INFO - Preprocessing pipeline completed successfully
+2025-12-05 17:35:12,353 - preprocessing_pipeline - INFO - ================================================================================

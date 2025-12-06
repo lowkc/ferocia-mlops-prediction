@@ -21,3 +21,6 @@ uv sync
 ```bash
 uv run ferocia-mlops-prediction
 ```
+
+# Tool Stack
+CoPilot and Cline in VSCode with Claude Haiku 4.5

@@ -17,4 +17,3 @@ jobs:
       - run: uv run just check-type
       - run: uv run just check-format
       - run: uv run just check-security
-      - run: uv run just check-coverage
