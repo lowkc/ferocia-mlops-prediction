@@ -19,6 +19,7 @@ dependencies = [
     "scikit-learn>=1.6.0",
     "numpy>=2.2.0",
     "pyyaml>=6.0.0",
+    "xgboost>=2.1.0",
 ]
 
 # LINKS

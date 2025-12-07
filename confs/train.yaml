@@ -1,0 +1,46 @@
+job_name: "term_deposit_prediction"
+
+data:
+  train_path: "data/processed/train.csv"
+  test_path: "data/processed/test.csv"
+  target_column: "y"
+
+preprocessing:
+  test_size: 0.2
+  random_seed: 42
+  categorical_features:
+    - "job"
+    - "marital"
+    - "education"
+    - "contact"
+    - "month"
+    - "poutcome"
+  numerical_features:
+    - "age"
+    - "balance"
+    - "day"
+    - "duration"
+    - "campaign"
+    - "previous"
+    - "total_contacts"
+    - "days_since_last_contact"
+  binary_features:
+    - "previous_contact"
+    - "default"
+    - "housing"
+    - "loan"
+
+model:
+  type: "XGBClassifier"
+  parameters:
+    objective: "binary:logistic"
+    eval_metric: "logloss"
+    learning_rate: 0.1
+    subsample: 0.5
+    max_depth: 5
+    random_state: 42
+
+
+
+
+
