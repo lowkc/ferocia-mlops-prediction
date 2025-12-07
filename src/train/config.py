@@ -15,11 +15,13 @@ class DataConfig:
         train_path: Path to training dataset CSV file.
         test_path: Path to test dataset CSV file.
         target_column: Name of the target column.
+        encode_target: Whether to encode the target variable as 0/1.
     """
 
     train_path: Path = Path("data/processed/train.csv")
     test_path: Path = Path("data/processed/test.csv")
     target_column: str = "y"
+    encode_target: bool = True
 
     def __post_init__(self) -> None:
         """Validate configuration parameters."""
@@ -60,8 +62,7 @@ class ModelConfig:
         supported_models = ["XGBClassifier"]
         if self.type not in supported_models:
             raise ValueError(
-                f"Model type '{self.type}' not supported. "
-                f"Supported models: {supported_models}"
+                f"Model type '{self.type}' not supported. Supported models: {supported_models}"
             )
 
 

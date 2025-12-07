@@ -1,12 +1,11 @@
 """Training pipeline for machine learning model with MLflow tracking."""
 
 import logging
-from pathlib import Path
 from typing import Any, Dict, Tuple
 
 import mlflow
 import mlflow.sklearn
-import numpy as np
+from mlflow.models.signature import infer_signature
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import (
@@ -17,7 +16,7 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 from xgboost import XGBClassifier
 
 from train.config import DataConfig, FeatureConfig, ModelConfig
@@ -74,6 +73,7 @@ class TrainingPipeline:
         self.model_config = model_config
         self.pipeline: Pipeline | None = None
         self.metrics: Dict[str, float] = {}
+        self.label_encoder: LabelEncoder | None = None
 
         # Set up MLflow experiment
         mlflow.set_experiment(self.job_name)
@@ -83,7 +83,7 @@ class TrainingPipeline:
         """Load training and test datasets.
 
         Returns:
-            Tuple of (X_train, X_test, y_train, y_test).
+            Tuple of (x_train, x_test, y_train, y_test) with encoded target.
 
         Raises:
             FileNotFoundError: If data files don't exist.
@@ -107,15 +107,28 @@ class TrainingPipeline:
             )
 
         # Split features and target
-        X_train = train_df.drop(columns=[self.data_config.target_column])
+        x_train = train_df.drop(columns=[self.data_config.target_column])
         y_train = train_df[self.data_config.target_column]
-        X_test = test_df.drop(columns=[self.data_config.target_column])
+        x_test = test_df.drop(columns=[self.data_config.target_column])
         y_test = test_df[self.data_config.target_column]
 
-        logger.info(f"Loaded {len(X_train)} training samples and {len(X_test)} test samples")
-        logger.info(f"Number of features: {len(X_train.columns)}")
+        # Encode target variable
+        if self.data_config.encode_target:
+            self.label_encoder = LabelEncoder()
+            y_train = pd.Series(self.label_encoder.fit_transform(y_train), index=y_train.index)
+            y_test = pd.Series(self.label_encoder.transform(y_test), index=y_test.index)
+            class_mapping = dict(
+                zip(
+                    self.label_encoder.classes_,
+                    self.label_encoder.transform(self.label_encoder.classes_),
+                )
+            )
+            logger.info(f"Encoded target variable: {class_mapping}")
 
-        return X_train, X_test, y_train, y_test
+        logger.info(f"Loaded {len(x_train)} training samples and {len(x_test)} test samples")
+        logger.info(f"Number of features: {len(x_train.columns)}")
+
+        return x_train, x_test, y_train, y_test
 
     def create_preprocessing_pipeline(self) -> ColumnTransformer:
         """Create sklearn preprocessing pipeline with feature transformations.
@@ -155,18 +168,17 @@ class TrainingPipeline:
                 "numerical features"
             )
 
-        # Pass through binary features (no transformation needed)
+        # Map binary features "yes"/"no" to 1/0
         if self.feature_config.binary_features:
             transformers.append(
                 (
                     "binary",
-                    "passthrough",
+                    OneHotEncoder(sparse_output=False, drop="if_binary"),
                     self.feature_config.binary_features,
                 )
             )
             logger.info(
-                f"Added passthrough for {len(self.feature_config.binary_features)} "
-                "binary features"
+                f"Added LabelEncoder for {len(self.feature_config.binary_features)} binary features"
             )
 
         preprocessor = ColumnTransformer(transformers=transformers, remainder="drop")
@@ -174,12 +186,12 @@ class TrainingPipeline:
         return preprocessor
 
     def train_model(
-        self, X_train: pd.DataFrame, y_train: pd.Series
+        self, x_train: pd.DataFrame, y_train: pd.Series
     ) -> Tuple[Pipeline, Dict[str, Any]]:
         """Train the machine learning model.
 
         Args:
-            X_train: Training features.
+            x_train: Training features.
             y_train: Training target.
 
         Returns:
@@ -206,24 +218,23 @@ class TrainingPipeline:
 
         # Train the model
         logger.info("Fitting pipeline...")
-        self.pipeline.fit(X_train, y_train)
+        self.pipeline.fit(x_train, y_train)
 
         training_info = {
             "model_type": self.model_config.type,
-            "n_samples": len(X_train),
-            "n_features": len(X_train.columns),
+            "n_samples": len(x_train),
+            "n_features": len(x_train.columns),
+            "x_train": x_train,
         }
 
         logger.info("Model training completed successfully")
         return self.pipeline, training_info
 
-    def evaluate_model(
-        self, X_test: pd.DataFrame, y_test: pd.Series
-    ) -> Dict[str, float]:
+    def evaluate_model(self, x_test: pd.DataFrame, y_test: pd.Series) -> Dict[str, float]:
         """Evaluate model performance on test data.
 
         Args:
-            X_test: Test features.
+            x_test: Test features.
             y_test: Test target.
 
         Returns:
@@ -235,8 +246,8 @@ class TrainingPipeline:
         logger.info("Evaluating model on test data...")
 
         # Make predictions
-        y_pred = self.pipeline.predict(X_test)
-        y_pred_proba = self.pipeline.predict_proba(X_test)[:, 1]
+        y_pred = self.pipeline.predict(x_test)
+        y_pred_proba = self.pipeline.predict_proba(x_test)[:, 1]
 
         # Calculate metrics
         self.metrics = {
@@ -278,13 +289,23 @@ class TrainingPipeline:
             # Log metrics
             mlflow.log_metrics(self.metrics)
 
+            # Infer signature
+            signature = None
+            x_train = training_info.get("x_train", pd.DataFrame())
+            if not x_train.empty and self.pipeline:
+                signature = infer_signature(x_train, self.pipeline.predict(x_train))
+
             # Log model (includes preprocessing pipeline)
             if self.pipeline is not None:
                 mlflow.sklearn.log_model(
                     self.pipeline,
-                    artifact_path="model",
+                    name=self.model_config.type,
                     registered_model_name=self.job_name,
+                    signature=signature,
                 )
+
+            # Log config file
+            mlflow.log_artifact("confs/train.yaml", artifact_path="config")
 
             logger.info("Successfully logged to MLflow")
 
@@ -300,13 +321,13 @@ class TrainingPipeline:
 
         try:
             # Load data
-            X_train, X_test, y_train, y_test = self.load_data()
+            x_train, x_test, y_train, y_test = self.load_data()
 
             # Train model
-            pipeline, training_info = self.train_model(X_train, y_train)
+            pipeline, training_info = self.train_model(x_train, y_train)
 
             # Evaluate model
-            metrics = self.evaluate_model(X_test, y_test)
+            metrics = self.evaluate_model(x_test, y_test)
 
             # Log to MLflow
             self.log_to_mlflow(training_info)

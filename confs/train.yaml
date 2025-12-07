@@ -4,6 +4,7 @@ data:
   train_path: "data/processed/train.csv"
   test_path: "data/processed/test.csv"
   target_column: "y"
+  encode_target: true
 
 preprocessing:
   test_size: 0.2
@@ -39,8 +40,3 @@ model:
     subsample: 0.5
     max_depth: 5
     random_state: 42
-
-
-
-
-
