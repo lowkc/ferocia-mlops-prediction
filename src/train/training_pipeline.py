@@ -19,7 +19,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 from xgboost import XGBClassifier
 
-from train.config import DataConfig, FeatureConfig, ModelConfig
+from entities.configs import TrainingDataConfig, FeatureConfig, ModelConfig
 
 # Configure logging
 logging.basicConfig(
@@ -55,7 +55,7 @@ class TrainingPipeline:
     def __init__(
         self,
         job_name: str,
-        data_config: DataConfig,
+        data_config: TrainingDataConfig,
         feature_config: FeatureConfig,
         model_config: ModelConfig,
     ) -> None:

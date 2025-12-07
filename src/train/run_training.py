@@ -4,7 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from train.config import load_config
+from train.config import load_training_config
 from train.training_pipeline import TrainingPipeline
 
 
@@ -26,7 +26,7 @@ def main() -> int:
 
     # Load configuration from YAML file
     try:
-        job_name, data_config, feature_config, model_config = load_config(args.config)
+        job_name, data_config, feature_config, model_config = load_training_config(args.config)
         print(f"\nLoaded configuration from: {args.config}")
         print(f"Experiment name: {job_name}")
 

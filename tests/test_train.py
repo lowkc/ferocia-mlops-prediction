@@ -9,7 +9,8 @@ import pytest
 import yaml
 from sklearn.pipeline import Pipeline
 
-from train.config import DataConfig, FeatureConfig, ModelConfig, load_config
+from entities.configs import TrainingDataConfig, FeatureConfig, ModelConfig
+from train.config import load_training_config
 from train.training_pipeline import TrainingPipeline
 
 
@@ -18,7 +19,7 @@ class TestDataConfig:
 
     def test_dataconfig_initialization_defaults(self):
         """Test DataConfig initialization with default values."""
-        config = DataConfig()
+        config = TrainingDataConfig()
 
         assert config.train_path == Path("data/processed/train.csv")
         assert config.test_path == Path("data/processed/test.csv")
@@ -27,7 +28,7 @@ class TestDataConfig:
 
     def test_dataconfig_initialization_custom_values(self):
         """Test DataConfig initialization with custom values."""
-        config = DataConfig(
+        config = TrainingDataConfig(
             train_path=Path("custom/train.csv"),
             test_path=Path("custom/test.csv"),
             target_column="target",
@@ -41,7 +42,7 @@ class TestDataConfig:
 
     def test_dataconfig_post_init_converts_strings_to_paths(self):
         """Test that __post_init__ converts string paths to Path objects."""
-        config = DataConfig(
+        config = TrainingDataConfig(
             train_path="data/train.csv",
             test_path="data/test.csv",
         )
@@ -132,7 +133,7 @@ class TestLoadConfig:
         with open(config_path, "w") as f:
             yaml.dump(config_data, f)
 
-        job_name, data_config, feature_config, model_config = load_config(config_path)
+        job_name, data_config, feature_config, model_config = load_training_config(config_path)
 
         # Verify job name
         assert job_name == "test_experiment"
@@ -163,7 +164,7 @@ class TestLoadConfig:
         with open(config_path, "w") as f:
             yaml.dump(config_data, f)
 
-        job_name, data_config, feature_config, model_config = load_config(config_path)
+        job_name, data_config, feature_config, model_config = load_training_config(config_path)
 
         # Verify defaults
         assert job_name == "model_training"
@@ -177,7 +178,7 @@ class TestLoadConfig:
     def test_load_config_file_not_found(self):
         """Test error when config file doesn't exist."""
         with pytest.raises(FileNotFoundError, match="Configuration file not found"):
-            load_config("nonexistent_config.yaml")
+            load_training_config("nonexistent_config.yaml")
 
     def test_load_config_invalid_yaml(self, tmp_path):
         """Test error with malformed YAML."""
@@ -186,7 +187,7 @@ class TestLoadConfig:
             f.write("invalid: yaml: content:\n  - broken")
 
         with pytest.raises(yaml.YAMLError, match="Error parsing YAML file"):
-            load_config(config_path)
+            load_training_config(config_path)
 
     def test_load_config_not_dict(self, tmp_path):
         """Test error when YAML is not a dictionary."""
@@ -195,7 +196,7 @@ class TestLoadConfig:
             yaml.dump(["item1", "item2"], f)
 
         with pytest.raises(ValueError, match="Invalid YAML structure.*expected a dictionary"):
-            load_config(config_path)
+            load_training_config(config_path)
 
     def test_load_config_data_not_dict(self, tmp_path):
         """Test error when 'data' section is not a dictionary."""
@@ -206,7 +207,7 @@ class TestLoadConfig:
             yaml.dump(config_data, f)
 
         with pytest.raises(ValueError, match="'data' section in YAML must be a dictionary"):
-            load_config(config_path)
+            load_training_config(config_path)
 
     def test_load_config_preprocessing_not_dict(self, tmp_path):
         """Test error when 'preprocessing' section is not a dictionary."""
@@ -219,7 +220,7 @@ class TestLoadConfig:
         with pytest.raises(
             ValueError, match="'preprocessing' section in YAML must be a dictionary"
         ):
-            load_config(config_path)
+            load_training_config(config_path)
 
     def test_load_config_model_not_dict(self, tmp_path):
         """Test error when 'model' section is not a dictionary."""
@@ -230,7 +231,7 @@ class TestLoadConfig:
             yaml.dump(config_data, f)
 
         with pytest.raises(ValueError, match="'model' section in YAML must be a dictionary"):
-            load_config(config_path)
+            load_training_config(config_path)
 
     def test_load_config_unsupported_model_type(self, tmp_path):
         """Test error when model type is not supported."""
@@ -245,7 +246,7 @@ class TestLoadConfig:
             yaml.dump(config_data, f)
 
         with pytest.raises(ValueError, match="Model type 'UnsupportedModel' not supported"):
-            load_config(config_path)
+            load_training_config(config_path)
 
 
 class TestTrainingPipelineInit:
@@ -254,7 +255,7 @@ class TestTrainingPipelineInit:
     @patch("train.training_pipeline.mlflow.set_experiment")
     def test_initialization(self, mock_set_experiment):
         """Test TrainingPipeline initialization."""
-        data_config = DataConfig()
+        data_config = TrainingDataConfig()
         feature_config = FeatureConfig()
         model_config = ModelConfig()
 
@@ -304,7 +305,9 @@ class TestTrainingPipelineLoadData:
         test_df.to_csv(test_path, index=False)
 
         # Create pipeline
-        data_config = DataConfig(train_path=train_path, test_path=test_path, encode_target=True)
+        data_config = TrainingDataConfig(
+            train_path=train_path, test_path=test_path, encode_target=True
+        )
         feature_config = FeatureConfig()
         model_config = ModelConfig()
 
@@ -354,7 +357,9 @@ class TestTrainingPipelineLoadData:
         train_df.to_csv(train_path, index=False)
         test_df.to_csv(test_path, index=False)
 
-        data_config = DataConfig(train_path=train_path, test_path=test_path, encode_target=False)
+        data_config = TrainingDataConfig(
+            train_path=train_path, test_path=test_path, encode_target=False
+        )
         feature_config = FeatureConfig()
         model_config = ModelConfig()
 
@@ -375,7 +380,7 @@ class TestTrainingPipelineLoadData:
     @patch("train.training_pipeline.mlflow.set_experiment")
     def test_load_data_train_file_not_found(self, mock_set_experiment):
         """Test error when training file doesn't exist."""
-        data_config = DataConfig(
+        data_config = TrainingDataConfig(
             train_path=Path("nonexistent_train.csv"),
             test_path=Path("nonexistent_test.csv"),
         )
@@ -399,7 +404,7 @@ class TestTrainingPipelineLoadData:
         train_path = tmp_path / "train.csv"
         train_df.to_csv(train_path, index=False)
 
-        data_config = DataConfig(
+        data_config = TrainingDataConfig(
             train_path=train_path,
             test_path=Path("nonexistent_test.csv"),
         )
@@ -427,7 +432,7 @@ class TestTrainingPipelineLoadData:
         train_df.to_csv(train_path, index=False)
         test_df.to_csv(test_path, index=False)
 
-        data_config = DataConfig(
+        data_config = TrainingDataConfig(
             train_path=train_path, test_path=test_path, target_column="missing_target"
         )
         feature_config = FeatureConfig()
@@ -450,7 +455,7 @@ class TestTrainingPipelinePreprocessing:
     @patch("train.training_pipeline.mlflow.set_experiment")
     def test_create_preprocessing_pipeline_all_feature_types(self, mock_set_experiment):
         """Test creating preprocessing pipeline with all feature types."""
-        data_config = DataConfig()
+        data_config = TrainingDataConfig()
         feature_config = FeatureConfig(
             categorical_features=["cat1", "cat2"],
             numerical_features=["num1", "num2", "num3"],
@@ -476,7 +481,7 @@ class TestTrainingPipelinePreprocessing:
     @patch("train.training_pipeline.mlflow.set_experiment")
     def test_create_preprocessing_pipeline_only_categorical(self, mock_set_experiment):
         """Test creating preprocessing pipeline with only categorical features."""
-        data_config = DataConfig()
+        data_config = TrainingDataConfig()
         feature_config = FeatureConfig(categorical_features=["cat1", "cat2"])
         model_config = ModelConfig()
 
@@ -495,7 +500,7 @@ class TestTrainingPipelinePreprocessing:
     @patch("train.training_pipeline.mlflow.set_experiment")
     def test_create_preprocessing_pipeline_only_numerical(self, mock_set_experiment):
         """Test creating preprocessing pipeline with only numerical features."""
-        data_config = DataConfig()
+        data_config = TrainingDataConfig()
         feature_config = FeatureConfig(numerical_features=["num1", "num2"])
         model_config = ModelConfig()
 
@@ -514,7 +519,7 @@ class TestTrainingPipelinePreprocessing:
     @patch("train.training_pipeline.mlflow.set_experiment")
     def test_create_preprocessing_pipeline_empty(self, mock_set_experiment):
         """Test creating preprocessing pipeline with no features."""
-        data_config = DataConfig()
+        data_config = TrainingDataConfig()
         feature_config = FeatureConfig()
         model_config = ModelConfig()
 
@@ -536,7 +541,7 @@ class TestTrainingPipelineTrainModel:
     @patch("train.training_pipeline.mlflow.set_experiment")
     def test_train_model_success(self, mock_set_experiment):
         """Test successful model training."""
-        data_config = DataConfig()
+        data_config = TrainingDataConfig()
         feature_config = FeatureConfig(numerical_features=["feature1", "feature2"])
         model_config = ModelConfig(
             type="XGBClassifier", parameters={"n_estimators": 10, "random_state": 42}
@@ -576,7 +581,7 @@ class TestTrainingPipelineTrainModel:
     @patch("train.training_pipeline.mlflow.set_experiment")
     def test_train_model_unsupported_model_type(self, mock_set_experiment):
         """Test error when model type is not supported."""
-        data_config = DataConfig()
+        data_config = TrainingDataConfig()
         feature_config = FeatureConfig()
         # Override the validation in ModelConfig for this test
         model_config = ModelConfig.__new__(ModelConfig)
@@ -603,7 +608,7 @@ class TestTrainingPipelineEvaluateModel:
     @patch("train.training_pipeline.mlflow.set_experiment")
     def test_evaluate_model_success(self, mock_set_experiment):
         """Test successful model evaluation."""
-        data_config = DataConfig()
+        data_config = TrainingDataConfig()
         feature_config = FeatureConfig(numerical_features=["feature1", "feature2"])
         model_config = ModelConfig(
             type="XGBClassifier", parameters={"n_estimators": 10, "random_state": 42}
@@ -653,7 +658,7 @@ class TestTrainingPipelineEvaluateModel:
     @patch("train.training_pipeline.mlflow.set_experiment")
     def test_evaluate_model_before_training(self, mock_set_experiment):
         """Test error when evaluating before training."""
-        data_config = DataConfig()
+        data_config = TrainingDataConfig()
         feature_config = FeatureConfig()
         model_config = ModelConfig()
 
@@ -696,7 +701,7 @@ class TestTrainingPipelineLogToMLflow:
         mock_start_run.return_value.__enter__ = Mock()
         mock_start_run.return_value.__exit__ = Mock()
 
-        data_config = DataConfig()
+        data_config = TrainingDataConfig()
         feature_config = FeatureConfig(
             categorical_features=["cat1"],
             numerical_features=["num1", "num2"],
@@ -806,7 +811,9 @@ class TestTrainingPipelineRun:
         test_df.to_csv(test_path, index=False)
 
         # Create pipeline
-        data_config = DataConfig(train_path=train_path, test_path=test_path, encode_target=False)
+        data_config = TrainingDataConfig(
+            train_path=train_path, test_path=test_path, encode_target=False
+        )
         feature_config = FeatureConfig(numerical_features=["num1", "num2"])
         model_config = ModelConfig(
             type="XGBClassifier", parameters={"n_estimators": 10, "random_state": 42}
@@ -838,7 +845,7 @@ class TestTrainingPipelineRun:
     @patch("train.training_pipeline.mlflow.set_experiment")
     def test_run_with_missing_data_file(self, mock_set_experiment):
         """Test error handling when data file is missing."""
-        data_config = DataConfig(
+        data_config = TrainingDataConfig(
             train_path=Path("nonexistent_train.csv"),
             test_path=Path("nonexistent_test.csv"),
         )
@@ -860,12 +867,12 @@ class TestRunTrainingMain:
     """Tests for run_training.py main function."""
 
     @patch("train.run_training.TrainingPipeline")
-    @patch("train.run_training.load_config")
+    @patch("train.run_training.load_training_config")
     @patch("train.run_training.Path.mkdir")
     def test_main_success(self, mock_mkdir, mock_load_config, mock_training_pipeline):
         """Test successful execution of main function."""
         # Mock configuration loading
-        mock_data_config = DataConfig()
+        mock_data_config = TrainingDataConfig()
         mock_feature_config = FeatureConfig()
         mock_model_config = ModelConfig()
         mock_load_config.return_value = (
@@ -901,7 +908,7 @@ class TestRunTrainingMain:
         mock_training_pipeline.assert_called_once()
         mock_pipeline_instance.run.assert_called_once()
 
-    @patch("train.run_training.load_config")
+    @patch("train.run_training.load_training_config")
     def test_main_config_load_error(self, mock_load_config):
         """Test error handling when config loading fails."""
         mock_load_config.side_effect = Exception("Config load error")
@@ -914,12 +921,12 @@ class TestRunTrainingMain:
         assert exit_code == 1
 
     @patch("train.run_training.TrainingPipeline")
-    @patch("train.run_training.load_config")
+    @patch("train.run_training.load_training_config")
     @patch("train.run_training.Path.mkdir")
     def test_main_training_error(self, mock_mkdir, mock_load_config, mock_training_pipeline):
         """Test error handling when training fails."""
         # Mock configuration loading
-        mock_data_config = DataConfig()
+        mock_data_config = TrainingDataConfig()
         mock_feature_config = FeatureConfig()
         mock_model_config = ModelConfig()
         mock_load_config.return_value = (
@@ -942,12 +949,12 @@ class TestRunTrainingMain:
         assert exit_code == 1
 
     @patch("train.run_training.TrainingPipeline")
-    @patch("train.run_training.load_config")
+    @patch("train.run_training.load_training_config")
     @patch("train.run_training.Path.mkdir")
     def test_main_default_config_path(self, mock_mkdir, mock_load_config, mock_training_pipeline):
         """Test that default config path is used when not specified."""
         # Mock configuration loading
-        mock_data_config = DataConfig()
+        mock_data_config = TrainingDataConfig()
         mock_feature_config = FeatureConfig()
         mock_model_config = ModelConfig()
         mock_load_config.return_value = (
