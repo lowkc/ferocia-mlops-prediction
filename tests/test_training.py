@@ -3,6 +3,8 @@
 from pathlib import Path
 from unittest.mock import Mock, patch
 
+from typing import Dict, Any
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -43,8 +45,8 @@ class TestDataConfig:
     def test_dataconfig_post_init_converts_strings_to_paths(self):
         """Test that __post_init__ converts string paths to Path objects."""
         config = TrainingDataConfig(
-            train_path="data/train.csv",
-            test_path="data/test.csv",
+            train_path=Path("data/train.csv"),
+            test_path=Path("data/test.csv"),
         )
 
         assert isinstance(config.train_path, Path)
@@ -155,7 +157,7 @@ class TestLoadConfig:
     def test_load_config_with_defaults(self, tmp_path):
         """Test loading configuration with missing optional fields uses defaults."""
         config_path = tmp_path / "minimal_config.yaml"
-        config_data = {
+        config_data: Dict[str, Any] = {
             "data": {},
             "preprocessing": {},
             "model": {},
