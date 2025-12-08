@@ -12,8 +12,8 @@ import yaml
 from sklearn.pipeline import Pipeline
 
 from entities.configs import TrainingDataConfig, FeatureConfig, ModelConfig
-from train.config import load_training_config
-from train.training_pipeline import TrainingPipeline
+from training.config import load_training_config
+from training.training_pipeline import TrainingPipeline
 
 
 class TestDataConfig:
@@ -899,7 +899,7 @@ class TestRunTrainingMain:
         mock_training_pipeline.return_value = mock_pipeline_instance
 
         # Import and run main
-        from train.run_training import main
+        from training.run_training import main
 
         with patch("sys.argv", ["run_training.py", "--config", "test_config.yaml"]):
             exit_code = main()
@@ -915,7 +915,7 @@ class TestRunTrainingMain:
         """Test error handling when config loading fails."""
         mock_load_config.side_effect = Exception("Config load error")
 
-        from train.run_training import main
+        from training.run_training import main
 
         with patch("sys.argv", ["run_training.py", "--config", "bad_config.yaml"]):
             exit_code = main()
@@ -943,7 +943,7 @@ class TestRunTrainingMain:
         mock_pipeline_instance.run.side_effect = Exception("Training error")
         mock_training_pipeline.return_value = mock_pipeline_instance
 
-        from train.run_training import main
+        from training.run_training import main
 
         with patch("sys.argv", ["run_training.py"]):
             exit_code = main()
@@ -971,11 +971,11 @@ class TestRunTrainingMain:
         mock_pipeline_instance.run.return_value = (Mock(), {"accuracy": 0.85})
         mock_training_pipeline.return_value = mock_pipeline_instance
 
-        from train.run_training import main
+        from training.run_training import main
 
         with patch("sys.argv", ["run_training.py"]):
             exit_code = main()
 
         # Verify default config path was used
-        mock_load_config.assert_called_once_with("confs/train.yaml")
+        mock_load_config.assert_called_once_with("confs/training.yaml")
         assert exit_code == 0

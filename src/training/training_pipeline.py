@@ -320,7 +320,7 @@ class TrainingPipeline:
                 )
 
             # Log config file
-            mlflow.log_artifact("confs/train.yaml", artifact_path="config")
+            mlflow.log_artifact("confs/training.yaml", artifact_path="config")
 
             self.logger.info("Successfully logged to MLflow")
 
