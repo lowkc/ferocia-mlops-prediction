@@ -1,0 +1,61 @@
+study:
+  direction: maximize
+  n_trials: 100
+  random_state: 42
+
+params:
+  objective: "binary:logistic"
+
+  booster:
+    type: categorical
+    choices: ["gbtree", "dart"]
+
+  max_depth:
+    type: int
+    low: 2
+    high: 10
+    step: 1
+  
+  min_child_weight:
+    type: int
+    low: 1
+    high: 10
+    step: 1
+
+  learning_rate:
+    type: float
+    low: 1e-4
+    high: 0.2
+    log: true
+
+  lambda:
+    type: float
+    low: 1e-8
+    high: 1.0
+    log: True
+
+  alpha:
+    type: float
+    low: 1e-8
+    high: 1.0
+    log: True
+
+  gamma:
+    type: float
+    low: 0.0
+    high: 0.5
+
+  scale_post_weight:  # For handling class imbalance, should be approx. (len(y) - np.sum(y)) / np.sum(y) 
+    type: float
+    low: 4.0
+    high: 10.0
+  
+  subsample:
+    type: float
+    low: 0.0
+    high: 1.0
+  
+  colsample_bytree:
+    type: float
+    low: 0.2
+    high: 0.9
