@@ -328,8 +328,6 @@ class PreprocessingPipeline:
 
             # Step 2: Validate and clean data
             df = self.data_cleaner.check_missing_values(df)
-            if self.preprocessing_config.handle_missing:
-                df = self.data_cleaner.impute_missing_values_with_mean(df)
             if self.preprocessing_config.drop_duplicates:
                 df = self.data_cleaner.drop_duplicate_rows(df)
 
@@ -355,13 +353,27 @@ class PreprocessingPipeline:
                 stratify=self.data_config.stratify,
             )
 
+            # Step 7: Handle missing values
+            if self.preprocessing_config.handle_missing:
+                numeric_cols = x_train.select_dtypes(include=["number"]).columns
+                train_means = {}
+
+                for col in numeric_cols:
+                    if x_train[col].isna().sum() > 0:
+                        train_means[col] = x_train[col].mean()
+                        self.logger.info(f"Calculated mean for {col}: {train_means[col]}")
+
+                x_train = x_train.fillna(train_means)
+                x_test = x_test.fillna(train_means)
+                self.logger.info("Applied imputation using training set means")
+
             self.metadata.train_samples = len(x_train)
             self.metadata.test_samples = len(x_test)
 
-            # Step 7: Save processed data
+            # Step 8: Save processed data
             self._save_processed_data(x_train, x_test, y_train, y_test)
 
-            # Step 8: Save metadata
+            # Step 9: Save metadata
             if self.preprocessing_config.save_metadata:
                 self._save_metadata()
 
