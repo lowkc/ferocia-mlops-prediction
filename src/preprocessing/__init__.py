@@ -1,11 +1,11 @@
 """Data preprocessing module for binary classification pipeline."""
 
-from preprocessing.config import (
+from src.preprocessing.config import (
     PreprocessingDataConfig,
     PreprocessingConfig,
     load_preprocessing_config,
 )
-from preprocessing.data_preprocessing import PreprocessingPipeline
+from src.preprocessing.data_preprocessing import PreprocessingPipeline
 
 __all__ = [
     "PreprocessingDataConfig",

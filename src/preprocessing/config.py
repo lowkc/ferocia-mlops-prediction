@@ -1,8 +1,8 @@
 """Configuration dataclasses for data preprocessing pipeline."""
 
 from pathlib import Path
-from utils.config_utils import get_and_validate_dict, load_yaml_config
-from entities.configs import PreprocessingDataConfig, PreprocessingConfig
+from src.utils.config_utils import get_and_validate_dict, load_yaml_config
+from src.entities.configs import PreprocessingDataConfig, PreprocessingConfig
 
 
 def load_preprocessing_config(

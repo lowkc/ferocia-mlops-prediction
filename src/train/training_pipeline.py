@@ -15,22 +15,13 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
+from pathlib import Path
+
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 from xgboost import XGBClassifier
 
-from entities.configs import TrainingDataConfig, FeatureConfig, ModelConfig
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler("logs/training.log"),
-        logging.StreamHandler(),
-    ],
-)
-logger = logging.getLogger(__name__)
+from src.entities.configs import TrainingDataConfig, FeatureConfig, ModelConfig
 
 
 class TrainingPipeline:
@@ -75,9 +66,33 @@ class TrainingPipeline:
         self.metrics: Dict[str, float] = {}
         self.label_encoder: LabelEncoder | None = None
 
+        self.logger = self._setup_logger()
+
         # Set up MLflow experiment
         mlflow.set_experiment(self.job_name)
-        logger.info(f"Initialized training pipeline for experiment: {self.job_name}")
+        self.logger.info(f"Initialized training pipeline for experiment: {self.job_name}")
+
+    def _setup_logger(self) -> logging.Logger:
+        """Setup logging configuration."""
+        logger = logging.getLogger("training_pipeline")
+        logger.setLevel(logging.INFO)
+        logger.handlers.clear()
+
+        # Console handler
+        console_handler = logging.StreamHandler()
+        console_formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
+        console_handler.setFormatter(console_formatter)
+        logger.addHandler(console_handler)
+
+        log_dir = Path("logs")
+        log_dir.mkdir(exist_ok=True)  # Create if doesn't exist
+        file_handler = logging.FileHandler(log_dir / "training.log")
+        file_handler.setFormatter(console_formatter)
+        logger.addHandler(file_handler)
+
+        return logger
 
     def load_data(self) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
         """Load training and test datasets.
@@ -89,7 +104,7 @@ class TrainingPipeline:
             FileNotFoundError: If data files don't exist.
             ValueError: If target column is missing.
         """
-        logger.info("Loading training and test data...")
+        self.logger.info("Loading training and test data...")
 
         if not self.data_config.train_path.exists():
             raise FileNotFoundError(f"Training data not found: {self.data_config.train_path}")
@@ -123,10 +138,10 @@ class TrainingPipeline:
                     self.label_encoder.transform(self.label_encoder.classes_),
                 )
             )
-            logger.info(f"Encoded target variable: {class_mapping}")
+            self.logger.info(f"Encoded target variable: {class_mapping}")
 
-        logger.info(f"Loaded {len(x_train)} training samples and {len(x_test)} test samples")
-        logger.info(f"Number of features: {len(x_train.columns)}")
+        self.logger.info(f"Loaded {len(x_train)} training samples and {len(x_test)} test samples")
+        self.logger.info(f"Number of features: {len(x_train.columns)}")
 
         return x_train, x_test, y_train, y_test
 
@@ -136,7 +151,7 @@ class TrainingPipeline:
         Returns:
             ColumnTransformer with appropriate transformations for each feature type.
         """
-        logger.info("Creating preprocessing pipeline...")
+        self.logger.info("Creating preprocessing pipeline...")
 
         transformers = []
 
@@ -149,7 +164,7 @@ class TrainingPipeline:
                     self.feature_config.categorical_features,
                 )
             )
-            logger.info(
+            self.logger.info(
                 f"Added OneHotEncoder for {len(self.feature_config.categorical_features)} "
                 "categorical features"
             )
@@ -163,7 +178,7 @@ class TrainingPipeline:
                     self.feature_config.numerical_features,
                 )
             )
-            logger.info(
+            self.logger.info(
                 f"Added StandardScaler for {len(self.feature_config.numerical_features)} "
                 "numerical features"
             )
@@ -177,7 +192,7 @@ class TrainingPipeline:
                     self.feature_config.binary_features,
                 )
             )
-            logger.info(
+            self.logger.info(
                 f"Added LabelEncoder for {len(self.feature_config.binary_features)} binary features"
             )
 
@@ -197,7 +212,7 @@ class TrainingPipeline:
         Returns:
             Tuple of (trained pipeline, training info dictionary).
         """
-        logger.info(f"Training {self.model_config.type} model...")
+        self.logger.info(f"Training {self.model_config.type} model...")
 
         # Create preprocessing pipeline
         preprocessor = self.create_preprocessing_pipeline()
@@ -217,7 +232,7 @@ class TrainingPipeline:
         )
 
         # Train the model
-        logger.info("Fitting pipeline...")
+        self.logger.info("Fitting pipeline...")
         self.pipeline.fit(x_train, y_train)
 
         training_info = {
@@ -227,7 +242,7 @@ class TrainingPipeline:
             "x_train": x_train,
         }
 
-        logger.info("Model training completed successfully")
+        self.logger.info("Model training completed successfully")
         return self.pipeline, training_info
 
     def evaluate_model(self, x_test: pd.DataFrame, y_test: pd.Series) -> Dict[str, float]:
@@ -243,7 +258,7 @@ class TrainingPipeline:
         if self.pipeline is None:
             raise ValueError("Model must be trained before evaluation")
 
-        logger.info("Evaluating model on test data...")
+        self.logger.info("Evaluating model on test data...")
 
         # Make predictions
         y_pred = self.pipeline.predict(x_test)
@@ -258,9 +273,9 @@ class TrainingPipeline:
             "roc_auc": roc_auc_score(y_test, y_pred_proba),
         }
 
-        logger.info("Evaluation metrics:")
+        self.logger.info("Evaluation metrics:")
         for metric_name, metric_value in self.metrics.items():
-            logger.info(f"  {metric_name}: {metric_value:.4f}")
+            self.logger.info(f"  {metric_name}: {metric_value:.4f}")
 
         return self.metrics
 
@@ -270,7 +285,7 @@ class TrainingPipeline:
         Args:
             training_info: Dictionary containing training information.
         """
-        logger.info("Logging to MLflow...")
+        self.logger.info("Logging to MLflow...")
 
         with mlflow.start_run():
             # Log parameters
@@ -307,7 +322,7 @@ class TrainingPipeline:
             # Log config file
             mlflow.log_artifact("confs/train.yaml", artifact_path="config")
 
-            logger.info("Successfully logged to MLflow")
+            self.logger.info("Successfully logged to MLflow")
 
     def run(self) -> Tuple[Pipeline, Dict[str, float]]:
         """Execute the complete training pipeline.
@@ -315,9 +330,9 @@ class TrainingPipeline:
         Returns:
             Tuple of (trained pipeline, evaluation metrics).
         """
-        logger.info("=" * 80)
-        logger.info(f"Starting training pipeline: {self.job_name}")
-        logger.info("=" * 80)
+        self.logger.info("=" * 80)
+        self.logger.info(f"Starting training pipeline: {self.job_name}")
+        self.logger.info("=" * 80)
 
         try:
             # Load data
@@ -332,12 +347,12 @@ class TrainingPipeline:
             # Log to MLflow
             self.log_to_mlflow(training_info)
 
-            logger.info("=" * 80)
-            logger.info("Training pipeline completed successfully!")
-            logger.info("=" * 80)
+            self.logger.info("=" * 80)
+            self.logger.info("Training pipeline completed successfully!")
+            self.logger.info("=" * 80)
 
             return pipeline, metrics
 
         except Exception as e:
-            logger.error(f"Training pipeline failed: {e}")
+            self.logger.error(f"Training pipeline failed: {e}")
             raise

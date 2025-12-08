@@ -4,8 +4,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from train.config import load_training_config
-from train.training_pipeline import TrainingPipeline
+from src.train.config import load_training_config
+from src.train.training_pipeline import TrainingPipeline
 
 
 def main() -> int:

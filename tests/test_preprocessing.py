@@ -9,10 +9,10 @@ import pandas as pd
 import pytest
 import yaml
 
-from entities.configs import PreprocessingDataConfig, PreprocessingConfig
+from src.entities.configs import PreprocessingDataConfig, PreprocessingConfig
 
-from preprocessing.config import load_preprocessing_config
-from preprocessing.data_preprocessing import (
+from src.preprocessing.config import load_preprocessing_config
+from src.preprocessing.data_preprocessing import (
     DataCleaner,
     DataLoader,
     DataSplitter,
@@ -287,7 +287,7 @@ class TestDataSplitter:
 class TestPreprocessingPipeline:
     """Tests for PreprocessingPipeline class."""
 
-    @patch("preprocessing.data_preprocessing.DataLoader.load_data")
+    @patch("src.preprocessing.data_preprocessing.DataLoader.load_data")
     def test_pipeline_run(self, mock_load_data, tmp_path):
         """Test full pipeline execution."""
         # Create sample data

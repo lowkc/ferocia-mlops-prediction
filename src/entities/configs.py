@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict
 
-from utils.config_utils import ensure_path
+from src.utils.config_utils import ensure_path
 
 
 @dataclass

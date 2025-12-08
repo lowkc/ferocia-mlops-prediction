@@ -2,8 +2,8 @@
 
 from pathlib import Path
 
-from utils.config_utils import get_and_validate_dict, load_yaml_config
-from entities.configs import TrainingDataConfig, FeatureConfig, ModelConfig
+from src.utils.config_utils import get_and_validate_dict, load_yaml_config
+from src.entities.configs import TrainingDataConfig, FeatureConfig, ModelConfig
 
 
 def load_training_config(

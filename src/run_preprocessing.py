@@ -3,8 +3,8 @@
 import argparse
 import sys
 
-from preprocessing.config import load_preprocessing_config
-from preprocessing.data_preprocessing import PreprocessingPipeline
+from src.preprocessing.config import load_preprocessing_config
+from src.preprocessing.data_preprocessing import PreprocessingPipeline
 
 
 def main() -> int:
