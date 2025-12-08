@@ -8,7 +8,7 @@ from typing import Any
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from preprocessing.config import DataConfig, PreprocessingMetadata, PreprocessingConfig
+from entities.configs import PreprocessingDataConfig, PreprocessingMetadata, PreprocessingConfig
 
 
 class DataLoader:
@@ -256,7 +256,9 @@ class DataSplitter:
 class PreprocessingPipeline:
     """Orchestrates the complete data preprocessing pipeline."""
 
-    def __init__(self, data_config: DataConfig, preprocessing_config: PreprocessingConfig) -> None:
+    def __init__(
+        self, data_config: PreprocessingDataConfig, preprocessing_config: PreprocessingConfig
+    ) -> None:
         """Initialise preprocessing pipeline.
 
         Args:

@@ -1,0 +1,95 @@
+{
+  "files_in_context": [
+    {
+      "path": "src/train/training_pipeline.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765092352677,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/train/config.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765092355741,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/train/run_training.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765092358500,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "tests/conftest.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765092361545,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "tests/test_preprocessing.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765092364489,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "confs/train.yaml",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765092369199,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "tests/test_train.py",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765092480989,
+      "cline_edit_date": 1765092480989,
+      "user_edit_date": null
+    },
+    {
+      "path": "tests/test_train.py",
+      "record_state": "stale",
+      "record_source": "user_edited",
+      "cline_read_date": 1765092480989,
+      "cline_edit_date": 1765092480989,
+      "user_edit_date": 1765092483647
+    },
+    {
+      "path": "tests/test_train.py",
+      "record_state": "active",
+      "record_source": "user_edited",
+      "cline_read_date": 1765092480989,
+      "cline_edit_date": 1765092480989,
+      "user_edit_date": 1765092525652
+    }
+  ],
+  "model_usage": [
+    {
+      "ts": 1765092344113,
+      "model_id": "au-claude-sonnet-4.5",
+      "model_provider_id": "litellm",
+      "mode": "act"
+    }
+  ],
+  "environment_history": [
+    {
+      "ts": 1765092344113,
+      "os_name": "darwin",
+      "os_version": "25.1.0",
+      "os_arch": "arm64",
+      "host_name": "Visual Studio Code",
+      "host_version": "1.106.3",
+      "cline_version": "3.40.0"
+    }
+  ]
+}

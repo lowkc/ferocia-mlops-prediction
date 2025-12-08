@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from preprocessing.config import load_config
+from preprocessing.config import load_preprocessing_config
 from preprocessing.data_preprocessing import PreprocessingPipeline
 
 
@@ -32,7 +32,7 @@ def main() -> int:
 
     # Load configuration from YAML file
     try:
-        data_config, preprocessing_config = load_config(args.config)
+        data_config, preprocessing_config = load_preprocessing_config(args.config)
 
         # Override log level if provided via CLI
         if args.log_level:
