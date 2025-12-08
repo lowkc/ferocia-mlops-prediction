@@ -124,6 +124,32 @@ class ModelConfig:
 
 
 @dataclass
+class TuningConfig:
+    """Configuration for hyperparameter tuning.
+
+    Attributes:
+        direction: Optimization direction ('maximize' or 'minimize').
+        n_trials: Number of optimization trials to run.
+        random_state: Random seed for reproducibility.
+        params: Dictionary of hyperparameter search spaces.
+    """
+
+    direction: str = "maximize"
+    n_trials: int = 50
+    random_state: int = 42
+    params: Dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        """Validate tuning configuration."""
+        if self.direction not in ["maximize", "minimize"]:
+            raise ValueError(f"direction must be 'maximize' or 'minimize', got '{self.direction}'")
+        if self.n_trials <= 0:
+            raise ValueError(f"n_trials must be positive, got {self.n_trials}")
+        if self.random_state < 0:
+            raise ValueError(f"random_state must be non-negative, got {self.random_state}")
+
+
+@dataclass
 class PreprocessingMetadata:
     """Metadata about preprocessing operations for reproducibility.
 

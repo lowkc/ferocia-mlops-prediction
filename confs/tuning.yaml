@@ -1,6 +1,6 @@
 study:
   direction: maximize
-  n_trials: 100
+  n_trials: 50
   random_state: 42
 
 params:
@@ -15,7 +15,7 @@ params:
     low: 2
     high: 10
     step: 1
-  
+
   min_child_weight:
     type: int
     low: 1
@@ -45,16 +45,16 @@ params:
     low: 0.0
     high: 0.5
 
-  scale_post_weight:  # For handling class imbalance, should be approx. (len(y) - np.sum(y)) / np.sum(y) 
+  scale_post_weight:  # For handling class imbalance, should be approx. (len(y) - np.sum(y)) / np.sum(y)
     type: float
     low: 4.0
     high: 10.0
-  
+
   subsample:
     type: float
     low: 0.0
     high: 1.0
-  
+
   colsample_bytree:
     type: float
     low: 0.2
