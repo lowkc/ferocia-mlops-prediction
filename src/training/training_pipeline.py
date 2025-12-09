@@ -5,16 +5,8 @@ from typing import Any, Dict, Tuple
 
 import mlflow
 import mlflow.sklearn
-from mlflow.models.signature import infer_signature
 import pandas as pd
 from sklearn.compose import ColumnTransformer
-from sklearn.metrics import (
-    accuracy_score,
-    f1_score,
-    precision_score,
-    recall_score,
-    roc_auc_score,
-)
 from pathlib import Path
 
 from sklearn.pipeline import Pipeline
@@ -22,6 +14,13 @@ from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 from xgboost import XGBClassifier
 
 from src.entities.configs import TrainingDataConfig, FeatureConfig, ModelConfig
+from src.utils.model_utils import (
+    calculate_metrics,
+    log_model_to_mlflow,
+    log_class_distribution,
+    log_metrics_to_mlflow,
+)
+from src.utils.plotting_utils import create_and_log_plots
 
 
 class TrainingPipeline:
@@ -63,7 +62,10 @@ class TrainingPipeline:
         self.feature_config = feature_config
         self.model_config = model_config
         self.pipeline: Pipeline | None = None
-        self.metrics: Dict[str, float] = {}
+        self.train_metrics: Dict[str, float] = {}
+        self.test_metrics: Dict[str, float] = {}
+        self.train_predictions: Dict[str, float] = {}
+        self.test_predictions: Dict[str, float] = {}
         self.label_encoder: LabelEncoder | None = None
 
         self.logger = self._setup_logger()
@@ -245,39 +247,59 @@ class TrainingPipeline:
         self.logger.info("Model training completed successfully")
         return self.pipeline, training_info
 
-    def evaluate_model(self, x_test: pd.DataFrame, y_test: pd.Series) -> Dict[str, float]:
-        """Evaluate model performance on test data.
+    def evaluate_model(
+        self, x_train: pd.DataFrame, y_train: pd.DataFrame, x_test: pd.DataFrame, y_test: pd.Series
+    ) -> Tuple[Dict[str, float], Dict[str, float]]:
+        """Evaluate model performance on train and test data.
 
         Args:
+            x_train: Train features.
+            y_train: Train target.
             x_test: Test features.
             y_test: Test target.
 
         Returns:
-            Dictionary of evaluation metrics.
+            Tuple containining (Dict of evaluation metrics on train data, Dict of eval metrics on test data).
         """
         if self.pipeline is None:
             raise ValueError("Model must be trained before evaluation")
 
         self.logger.info("Evaluating model on test data...")
 
-        # Make predictions
-        y_pred = self.pipeline.predict(x_test)
-        y_pred_proba = self.pipeline.predict_proba(x_test)[:, 1]
+        # Make predictions on train data and calculate metrics
+        y_pred_train = self.pipeline.predict(x_train)
+        y_pred_proba_train = self.pipeline.predict_proba(x_train)[:, 1]
+        self.train_metrics = calculate_metrics(
+            y_train, y_pred_train, y_pred_proba_train, prefix="train"
+        )
 
-        # Calculate metrics
-        self.metrics = {
-            "accuracy": accuracy_score(y_test, y_pred),
-            "precision": precision_score(y_test, y_pred, zero_division=0),
-            "recall": recall_score(y_test, y_pred, zero_division=0),
-            "f1_score": f1_score(y_test, y_pred, zero_division=0),
-            "roc_auc": roc_auc_score(y_test, y_pred_proba),
+        # Make predictions on test data
+        y_pred_test = self.pipeline.predict(x_test)
+        y_pred_proba_test = self.pipeline.predict_proba(x_test)[:, 1]
+        self.test_metrics = calculate_metrics(y_test, y_pred_test, y_pred_proba_test, prefix="test")
+
+        # Store predictions for later visualization
+        self.train_predictions = {
+            "y_true": y_train,
+            "y_pred": y_pred_train,
+            "y_pred_proba": y_pred_proba_train,
         }
 
-        self.logger.info("Evaluation metrics:")
-        for metric_name, metric_value in self.metrics.items():
+        self.test_predictions = {
+            "y_true": y_test,
+            "y_pred": y_pred_test,
+            "y_pred_proba": y_pred_proba_test,
+        }
+
+        self.logger.info("Evaluation metrics (train set):")
+        for metric_name, metric_value in self.train_metrics.items():
+            self.logger.info(f"  test_{metric_name}: {metric_value:.4f}")
+
+        self.logger.info("Evaluation metrics (test set):")
+        for metric_name, metric_value in self.test_metrics.items():
             self.logger.info(f"  {metric_name}: {metric_value:.4f}")
 
-        return self.metrics
+        return self.train_metrics, self.test_metrics
 
     def log_to_mlflow(self, training_info: Dict[str, Any]) -> None:
         """Log parameters, metrics, and model to MLflow.
@@ -301,23 +323,26 @@ class TrainingPipeline:
             mlflow.log_param("n_numerical_features", len(self.feature_config.numerical_features))
             mlflow.log_param("n_binary_features", len(self.feature_config.binary_features))
 
-            # Log metrics
-            mlflow.log_metrics(self.metrics)
+            # Log train and test metrics
+            log_metrics_to_mlflow(self.train_metrics, prefix="train")
+            log_metrics_to_mlflow(self.test_metrics, prefix="test")
 
-            # Infer signature
-            signature = None
-            x_train = training_info.get("x_train", pd.DataFrame())
-            if not x_train.empty and self.pipeline:
-                signature = infer_signature(x_train, self.pipeline.predict(x_train))
+            # Log plots
+            create_and_log_plots(
+                self.test_predictions["y_true"],
+                self.test_predictions["y_pred"],
+                self.test_predictions["y_pred_proba"],
+                self.pipeline,
+            )
+
+            # Log class distribution
+            log_class_distribution(
+                self.train_predictions.get("y_true", []), self.test_predictions.get("y_true", [])
+            )
 
             # Log model (includes preprocessing pipeline)
             if self.pipeline is not None:
-                mlflow.sklearn.log_model(
-                    self.pipeline,
-                    name=self.model_config.type,
-                    registered_model_name=self.job_name,
-                    signature=signature,
-                )
+                log_model_to_mlflow(self.pipeline, model_name=self.model_config.type)
 
             # Log config file
             mlflow.log_artifact("confs/training.yaml", artifact_path="config")
@@ -341,8 +366,8 @@ class TrainingPipeline:
             # Train model
             pipeline, training_info = self.train_model(x_train, y_train)
 
-            # Evaluate model
-            metrics = self.evaluate_model(x_test, y_test)
+            # Evaluate model on test data
+            _, test_metrics = self.evaluate_model(x_train, y_train, x_test, y_test)
 
             # Log to MLflow
             self.log_to_mlflow(training_info)
@@ -351,7 +376,7 @@ class TrainingPipeline:
             self.logger.info("Training pipeline completed successfully!")
             self.logger.info("=" * 80)
 
-            return pipeline, metrics
+            return pipeline, test_metrics
 
         except Exception as e:
             self.logger.error(f"Training pipeline failed: {e}")

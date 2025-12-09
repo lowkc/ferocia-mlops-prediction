@@ -1,6 +1,6 @@
 study:
   direction: maximize
-  n_trials: 100
+  n_trials: 3
   random_state: 42
 
 params:

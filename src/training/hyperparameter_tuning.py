@@ -8,7 +8,6 @@ import matplotlib
 
 matplotlib.use("Agg")
 import mlflow
-import mlflow.sklearn
 import numpy as np
 import optuna
 from optuna.visualization import (
@@ -17,18 +16,7 @@ from optuna.visualization import (
     plot_slice,
 )
 import pandas as pd
-from sklearn.metrics import (
-    accuracy_score,
-    f1_score,
-    precision_score,
-    recall_score,
-    roc_auc_score,
-)
-from src.utils.plotting_utils import (
-    plot_confusion_matrix,
-    plot_roc_curve,
-    plot_feature_importance,
-)
+
 from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
@@ -40,6 +28,8 @@ from src.entities.configs import (
     TuningConfig,
 )
 from src.training.training_pipeline import TrainingPipeline
+from src.utils.model_utils import calculate_metrics, log_model_to_mlflow, log_class_distribution
+from src.utils.plotting_utils import create_and_log_plots
 
 
 class HyperparameterTuningPipeline:
@@ -191,48 +181,6 @@ class HyperparameterTuningPipeline:
 
         return suggested_params
 
-    def _calculate_metrics(
-        self, y_true: pd.Series, y_pred: np.ndarray, y_pred_proba: np.ndarray
-    ) -> Dict[str, float]:
-        """Calculate evaluation metrics.
-
-        Args:
-            y_true: True labels.
-            y_pred: Predicted labels.
-            y_pred_proba: Predicted probabilities for positive class.
-
-        Returns:
-            Dictionary of metrics.
-        """
-        return {
-            "accuracy": accuracy_score(y_true, y_pred),
-            "precision": precision_score(y_true, y_pred, zero_division=0),
-            "recall": recall_score(y_true, y_pred, zero_division=0),
-            "f1_score": f1_score(y_true, y_pred, zero_division=0),
-            "roc_auc": roc_auc_score(y_true, y_pred_proba),
-        }
-
-    def _log_class_distribution(self) -> None:
-        """Log class distribution information to MLflow."""
-        train_class_counts = self.y_train.value_counts().to_dict()
-        test_class_counts = self.y_test.value_counts().to_dict()
-
-        total_train = len(self.y_train)
-        total_test = len(self.y_test)
-
-        mlflow.log_param("train_class_0_count", train_class_counts.get(0, 0))
-        mlflow.log_param("train_class_1_count", train_class_counts.get(1, 0))
-        mlflow.log_param("train_class_0_pct", train_class_counts.get(0, 0) / total_train * 100)
-        mlflow.log_param("train_class_1_pct", train_class_counts.get(1, 0) / total_train * 100)
-
-        mlflow.log_param("test_class_0_count", test_class_counts.get(0, 0))
-        mlflow.log_param("test_class_1_count", test_class_counts.get(1, 0))
-        mlflow.log_param("test_class_0_pct", test_class_counts.get(0, 0) / total_test * 100)
-        mlflow.log_param("test_class_1_pct", test_class_counts.get(1, 0) / total_test * 100)
-
-        self.logger.info(f"Train class distribution: {train_class_counts}")
-        self.logger.info(f"Test class distribution: {test_class_counts}")
-
     def _objective(self, trial: optuna.Trial) -> float:
         """Optuna objective function with 5-fold cross-validation.
 
@@ -313,14 +261,12 @@ class HyperparameterTuningPipeline:
                 # Calculate train metrics
                 y_train_pred = pipeline.predict(x_train_fold)
                 y_train_pred_proba = pipeline.predict_proba(x_train_fold)[:, 1]
-                train_metrics = self._calculate_metrics(
-                    y_train_fold, y_train_pred, y_train_pred_proba
-                )
+                train_metrics = calculate_metrics(y_train_fold, y_train_pred, y_train_pred_proba)
 
                 # Calculate validation metrics
                 y_val_pred = pipeline.predict(x_val_fold)
                 y_val_pred_proba = pipeline.predict_proba(x_val_fold)[:, 1]
-                val_metrics = self._calculate_metrics(y_val_fold, y_val_pred, y_val_pred_proba)
+                val_metrics = calculate_metrics(y_val_fold, y_val_pred, y_val_pred_proba)
 
                 # Store metrics for aggregation
                 for metric_name in fold_train_metrics.keys():
@@ -441,7 +387,7 @@ class HyperparameterTuningPipeline:
                 # Evaluate on test set
                 y_test_pred = pipeline.predict(self.x_test)
                 y_test_pred_proba = pipeline.predict_proba(self.x_test)[:, 1]
-                test_metrics = self._calculate_metrics(self.y_test, y_test_pred, y_test_pred_proba)
+                test_metrics = calculate_metrics(self.y_test, y_test_pred, y_test_pred_proba)
 
                 # Log test metrics
                 mlflow.log_metrics({f"test_{k}": v for k, v in test_metrics.items()})
@@ -453,66 +399,37 @@ class HyperparameterTuningPipeline:
 
                 # Create and log visualizations
                 self.logger.info("\nCreating and logging visualizations...")
+                create_and_log_plots(self.y_test, y_test_pred, y_test_pred_proba, pipeline)
 
-                # Confusion Matrix
-                try:
-                    cm_path = plot_confusion_matrix(
-                        self.y_test, y_test_pred, "Test Set Confusion Matrix"
-                    )
-                    mlflow.log_artifact(cm_path, artifact_path="visualizations")
-                    self.logger.info(f"  ✓ Confusion matrix saved to {cm_path}")
-                except Exception as e:
-                    self.logger.warning(f"  ✗ Could not create confusion matrix: {e}")
-
-                # ROC Curve
-                try:
-                    roc_path = plot_roc_curve(self.y_test, y_test_pred_proba, "Test Set ROC Curve")
-                    mlflow.log_artifact(roc_path, artifact_path="visualizations")
-                    self.logger.info(f"  ✓ ROC curve saved to {roc_path}")
-                except Exception as e:
-                    self.logger.warning(f"  ✗ Could not create ROC curve: {e}")
-
-                # Feature Importance
-                try:
-                    fi_path = plot_feature_importance(pipeline, top_n=20)
-                    mlflow.log_artifact(fi_path, artifact_path="visualizations")
-                    self.logger.info(f"  ✓ Feature importance saved to {fi_path}")
-                except Exception as e:
-                    self.logger.warning(f"  ✗ Could not create feature importance plot: {e}")
-
-                # Optuna Optimization History
+                # Create plots for Optuna optimization history
                 try:
                     opt_hist_path = self._plot_optimization_history(study)
                     mlflow.log_artifact(opt_hist_path, artifact_path="optuna")
-                    self.logger.info(f"  ✓ Optimization history saved to {opt_hist_path}")
+                    self.logger.info(f"Optimization history saved to {opt_hist_path}")
                 except Exception as e:
-                    self.logger.warning(f"  ✗ Could not create optimization history: {e}")
+                    self.logger.warning(f"Could not create optimization history: {e}")
 
                 # Parameter Importances
                 param_imp_path = self._plot_param_importances(study)
                 if param_imp_path:
                     mlflow.log_artifact(param_imp_path, artifact_path="optuna")
-                    self.logger.info(f"  ✓ Parameter importances saved to {param_imp_path}")
+                    self.logger.info(f"Parameter importances saved to {param_imp_path}")
 
                 # Parameter Slice Plot
                 param_slice_path = self._plot_param_slice(study)
                 if param_slice_path:
                     mlflow.log_artifact(param_slice_path, artifact_path="optuna")
-                    self.logger.info(f"  ✓ Parameter slice plot saved to {param_slice_path}")
+                    self.logger.info(f"Parameter slice plot saved to {param_slice_path}")
 
                 # Log the best model
                 try:
-                    mlflow.sklearn.log_model(
-                        pipeline,
-                        artifact_path="best_model",
-                        registered_model_name=f"{self.job_name}_best_model",
-                    )
-                    self.logger.info("  ✓ Best model logged to MLflow")
+                    log_model_to_mlflow(pipeline, model_name=f"{self.job_name}_best_model")
+                    self.logger.info("Best model logged to MLflow")
                 except Exception as e:
-                    self.logger.warning(f"  ✗ Could not log model: {e}")
+                    self.logger.warning(f"Could not log model: {e}")
 
                 # Log class distribution information
-                self._log_class_distribution()
+                log_class_distribution(self.y_train, self.y_test)
 
                 # Log config files
                 mlflow.log_artifact("confs/training.yaml", artifact_path="config")
