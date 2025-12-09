@@ -324,8 +324,8 @@ class TrainingPipeline:
             mlflow.log_param("n_binary_features", len(self.feature_config.binary_features))
 
             # Log train and test metrics
-            log_metrics_to_mlflow(self.train_metrics, prefix="train")
-            log_metrics_to_mlflow(self.test_metrics, prefix="test")
+            log_metrics_to_mlflow(self.train_metrics)
+            log_metrics_to_mlflow(self.test_metrics)
 
             # Log plots
             create_and_log_plots(
