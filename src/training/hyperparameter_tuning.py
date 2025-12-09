@@ -233,9 +233,10 @@ class HyperparameterTuningPipeline:
             for fold_idx, (train_idx, val_idx) in enumerate(
                 cv.split(self.x_train, self.y_train), 1
             ):
-                assert (self.x_train is not None) and (self.y_train is not None), (
-                    "Training data (x_train and y_train) must be initialized before splitting folds."
-                )
+                if (self.x_train is None) or (self.y_train is None):
+                    raise ValueError(
+                        "Training data (x_train and y_train) must be initialized before splitting folds."
+                    )
                 # Split data for this fold
                 x_train_fold = self.x_train.iloc[train_idx]
                 y_train_fold = self.y_train.iloc[train_idx]
