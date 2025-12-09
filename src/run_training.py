@@ -4,8 +4,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from train.config import load_training_config
-from train.training_pipeline import TrainingPipeline
+from src.training.config import load_training_config
+from src.training.training_pipeline import TrainingPipeline
 
 
 def main() -> int:
@@ -18,7 +18,7 @@ def main() -> int:
     parser.add_argument(
         "--config",
         type=str,
-        default="confs/train.yaml",
+        default="confs/training.yaml",
         help="Path to configuration YAML file (default: confs/train.yaml)",
     )
 

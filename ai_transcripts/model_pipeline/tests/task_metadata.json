@@ -41,7 +41,7 @@
       "user_edit_date": null
     },
     {
-      "path": "confs/train.yaml",
+      "path": "confs/training.yaml",
       "record_state": "active",
       "record_source": "read_tool",
       "cline_read_date": 1765092369199,

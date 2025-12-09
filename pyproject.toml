@@ -20,6 +20,9 @@ dependencies = [
     "numpy>=2.2.0",
     "pyyaml>=6.0.0",
     "xgboost>=2.1.0",
+    "optuna>=4.0.0",
+    "seaborn>=0.13.0",
+    "matplotlib>=3.9.0",
 ]
 
 # LINKS
@@ -34,7 +37,9 @@ Changelog = "https://github.com/lowkc/ferocia-mlops-prediction/blob/main/CHANGEL
 # SCRIPTS
 
 [project.scripts]
-ferocia-mlops-prediction = "src.scripts:main"
+preprocess-data = "run_preprocessing:main"
+train-model = "run_training:main"
+tune-model = "run_tuning:main"
 
 # DEPENDENCIES
 

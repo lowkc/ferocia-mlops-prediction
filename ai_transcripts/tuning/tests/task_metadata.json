@@ -1,0 +1,167 @@
+{
+  "files_in_context": [
+    {
+      "path": "src/training/hyperparameter_tuning.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765257828416,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/utils/model_utils.py",
+      "record_state": "stale",
+      "record_source": "read_tool",
+      "cline_read_date": 1765257832963,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/utils/plotting_utils.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765257836252,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "tests/conftest.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765257839657,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "tests/test_training.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765257842508,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "pyproject.toml",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765257850448,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "tests/test_model_utils.py",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765257912609,
+      "cline_edit_date": 1765257912609,
+      "user_edit_date": null
+    },
+    {
+      "path": "tests/test_plotting_utils.py",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765257975227,
+      "cline_edit_date": 1765257975227,
+      "user_edit_date": null
+    },
+    {
+      "path": "tests/test_hyperparameter_tuning.py",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765258050458,
+      "cline_edit_date": 1765258050458,
+      "user_edit_date": null
+    },
+    {
+      "path": "tests/test_model_utils.py",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765258078339,
+      "cline_edit_date": 1765258078339,
+      "user_edit_date": null
+    },
+    {
+      "path": "tests/test_model_utils.py",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765258086774,
+      "cline_edit_date": 1765258086774,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/entities/configs.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765258105141,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/utils/model_utils.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765258108507,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "tests/test_model_utils.py",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765258121244,
+      "cline_edit_date": 1765258121244,
+      "user_edit_date": null
+    },
+    {
+      "path": "tests/test_model_utils.py",
+      "record_state": "stale",
+      "record_source": "user_edited",
+      "cline_read_date": 1765258121244,
+      "cline_edit_date": 1765258121244,
+      "user_edit_date": 1765258122046
+    },
+    {
+      "path": "tests/test_hyperparameter_tuning.py",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765258135535,
+      "cline_edit_date": 1765258135535,
+      "user_edit_date": null
+    },
+    {
+      "path": "tests/test_hyperparameter_tuning.py",
+      "record_state": "active",
+      "record_source": "user_edited",
+      "cline_read_date": 1765258135535,
+      "cline_edit_date": 1765258135535,
+      "user_edit_date": 1765258136170
+    },
+    {
+      "path": "tests/test_model_utils.py",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765258158996,
+      "cline_edit_date": 1765258158996,
+      "user_edit_date": 1765258122046
+    }
+  ],
+  "model_usage": [
+    {
+      "ts": 1765257823117,
+      "model_id": "au-claude-sonnet-4.5",
+      "model_provider_id": "litellm",
+      "mode": "act"
+    }
+  ],
+  "environment_history": [
+    {
+      "ts": 1765257823116,
+      "os_name": "darwin",
+      "os_version": "25.1.0",
+      "os_arch": "arm64",
+      "host_name": "Visual Studio Code",
+      "host_version": "1.106.3",
+      "cline_version": "3.40.1"
+    }
+  ]
+}

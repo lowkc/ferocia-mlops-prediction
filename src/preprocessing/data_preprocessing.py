@@ -8,7 +8,7 @@ from typing import Any
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from entities.configs import PreprocessingDataConfig, PreprocessingMetadata, PreprocessingConfig
+from src.entities.configs import PreprocessingDataConfig, PreprocessingMetadata, PreprocessingConfig
 
 
 class DataLoader:

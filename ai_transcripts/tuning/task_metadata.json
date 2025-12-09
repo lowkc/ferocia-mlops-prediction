@@ -1,0 +1,205 @@
+{
+  "files_in_context": [
+    {
+      "path": "confs/training.yaml",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765235078946,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "confs/tuning.yaml",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765235081849,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/training/hyperparameter_tuning.py",
+      "record_state": "stale",
+      "record_source": "read_tool",
+      "cline_read_date": 1765235084159,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/run_training.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765235086421,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/training/training_pipeline.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765235088804,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/entities/configs.py",
+      "record_state": "stale",
+      "record_source": "read_tool",
+      "cline_read_date": 1765235091093,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/training/config.py",
+      "record_state": "stale",
+      "record_source": "read_tool",
+      "cline_read_date": 1765235093513,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "pyproject.toml",
+      "record_state": "stale",
+      "record_source": "read_tool",
+      "cline_read_date": 1765235095756,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "pyproject.toml",
+      "record_state": "stale",
+      "record_source": "read_tool",
+      "cline_read_date": 1765235211802,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "pyproject.toml",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765235220973,
+      "cline_edit_date": 1765235220973,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/entities/configs.py",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765235233626,
+      "cline_edit_date": 1765235233626,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/entities/configs.py",
+      "record_state": "active",
+      "record_source": "user_edited",
+      "cline_read_date": 1765235233626,
+      "cline_edit_date": 1765235233626,
+      "user_edit_date": 1765235234180
+    },
+    {
+      "path": "src/training/config.py",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765235246021,
+      "cline_edit_date": 1765235246021,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/training/config.py",
+      "record_state": "active",
+      "record_source": "user_edited",
+      "cline_read_date": 1765235246021,
+      "cline_edit_date": 1765235246021,
+      "user_edit_date": 1765235246380
+    },
+    {
+      "path": "src/training/hyperparameter_tuning.py",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765235297748,
+      "cline_edit_date": 1765235297748,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/run_tuning.py",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765235317826,
+      "cline_edit_date": 1765235317826,
+      "user_edit_date": null
+    },
+    {
+      "path": "confs/tuning_test.yaml",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765235342518,
+      "cline_edit_date": 1765235342518,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/training/__init__.py",
+      "record_state": "stale",
+      "record_source": "read_tool",
+      "cline_read_date": 1765235348615,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/training/__init__.py",
+      "record_state": "stale",
+      "record_source": "user_edited",
+      "cline_read_date": 1765235348615,
+      "cline_edit_date": null,
+      "user_edit_date": 1765235351788
+    },
+    {
+      "path": "src/training/__init__.py",
+      "record_state": "stale",
+      "record_source": "user_edited",
+      "cline_read_date": 1765235348615,
+      "cline_edit_date": null,
+      "user_edit_date": 1765235353059
+    },
+    {
+      "path": "src/training/__init__.py",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765235356612,
+      "cline_edit_date": 1765235356612,
+      "user_edit_date": 1765235353059
+    },
+    {
+      "path": "src/training/__init__.py",
+      "record_state": "active",
+      "record_source": "user_edited",
+      "cline_read_date": 1765235356612,
+      "cline_edit_date": 1765235356612,
+      "user_edit_date": 1765235357058
+    }
+  ],
+  "model_usage": [
+    {
+      "ts": 1765235074537,
+      "model_id": "au-claude-sonnet-4.5",
+      "model_provider_id": "litellm",
+      "mode": "plan"
+    },
+    {
+      "ts": 1765235207536,
+      "model_id": "au-claude-sonnet-4.5",
+      "model_provider_id": "litellm",
+      "mode": "act"
+    }
+  ],
+  "environment_history": [
+    {
+      "ts": 1765235074536,
+      "os_name": "darwin",
+      "os_version": "25.1.0",
+      "os_arch": "arm64",
+      "host_name": "Visual Studio Code",
+      "host_version": "1.106.3",
+      "cline_version": "3.40.1"
+    }
+  ]
+}
