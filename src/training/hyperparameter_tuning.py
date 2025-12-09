@@ -4,9 +4,18 @@ import logging
 from pathlib import Path
 from typing import Any, Dict
 
+import matplotlib
+
+matplotlib.use("Agg")
 import mlflow
+import mlflow.sklearn
 import numpy as np
 import optuna
+from optuna.visualization import (
+    plot_optimization_history,
+    plot_param_importances,
+    plot_slice,
+)
 import pandas as pd
 from sklearn.metrics import (
     accuracy_score,
@@ -14,6 +23,11 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     roc_auc_score,
+)
+from src.utils.plotting_utils import (
+    plot_confusion_matrix,
+    plot_roc_curve,
+    plot_feature_importance,
 )
 from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
@@ -156,18 +170,21 @@ class HyperparameterTuningPipeline:
                     step=param_config.get("step", 1),
                 )
             elif param_type == "float":
+                # Ensure low and high are float, not strings
+                low = float(param_config["low"])
+                high = float(param_config["high"])
                 if param_config.get("log", False):
                     suggested_params[param_name] = trial.suggest_float(
                         param_name,
-                        param_config["low"],
-                        param_config["high"],
+                        low,
+                        high,
                         log=True,
                     )
                 else:
                     suggested_params[param_name] = trial.suggest_float(
                         param_name,
-                        param_config["low"],
-                        param_config["high"],
+                        low,
+                        high,
                     )
             else:
                 self.logger.warning(f"Unknown parameter type '{param_type}' for {param_name}")
@@ -194,6 +211,27 @@ class HyperparameterTuningPipeline:
             "f1_score": f1_score(y_true, y_pred, zero_division=0),
             "roc_auc": roc_auc_score(y_true, y_pred_proba),
         }
+
+    def _log_class_distribution(self) -> None:
+        """Log class distribution information to MLflow."""
+        train_class_counts = self.y_train.value_counts().to_dict()
+        test_class_counts = self.y_test.value_counts().to_dict()
+
+        total_train = len(self.y_train)
+        total_test = len(self.y_test)
+
+        mlflow.log_param("train_class_0_count", train_class_counts.get(0, 0))
+        mlflow.log_param("train_class_1_count", train_class_counts.get(1, 0))
+        mlflow.log_param("train_class_0_pct", train_class_counts.get(0, 0) / total_train * 100)
+        mlflow.log_param("train_class_1_pct", train_class_counts.get(1, 0) / total_train * 100)
+
+        mlflow.log_param("test_class_0_count", test_class_counts.get(0, 0))
+        mlflow.log_param("test_class_1_count", test_class_counts.get(1, 0))
+        mlflow.log_param("test_class_0_pct", test_class_counts.get(0, 0) / total_test * 100)
+        mlflow.log_param("test_class_1_pct", test_class_counts.get(1, 0) / total_test * 100)
+
+        self.logger.info(f"Train class distribution: {train_class_counts}")
+        self.logger.info(f"Test class distribution: {test_class_counts}")
 
     def _objective(self, trial: optuna.Trial) -> float:
         """Optuna objective function with 5-fold cross-validation.
@@ -413,13 +451,88 @@ class HyperparameterTuningPipeline:
                 for metric_name, metric_value in test_metrics.items():
                     self.logger.info(f"  {metric_name:.<30} {metric_value:.4f}")
 
+                # Create and log visualizations
+                self.logger.info("\nCreating and logging visualizations...")
+
+                # Confusion Matrix
+                try:
+                    cm_path = plot_confusion_matrix(
+                        self.y_test, y_test_pred, "Test Set Confusion Matrix"
+                    )
+                    mlflow.log_artifact(cm_path, artifact_path="visualizations")
+                    self.logger.info(f"  ✓ Confusion matrix saved to {cm_path}")
+                except Exception as e:
+                    self.logger.warning(f"  ✗ Could not create confusion matrix: {e}")
+
+                # ROC Curve
+                try:
+                    roc_path = plot_roc_curve(self.y_test, y_test_pred_proba, "Test Set ROC Curve")
+                    mlflow.log_artifact(roc_path, artifact_path="visualizations")
+                    self.logger.info(f"  ✓ ROC curve saved to {roc_path}")
+                except Exception as e:
+                    self.logger.warning(f"  ✗ Could not create ROC curve: {e}")
+
+                # Feature Importance
+                try:
+                    fi_path = plot_feature_importance(pipeline, top_n=20)
+                    mlflow.log_artifact(fi_path, artifact_path="visualizations")
+                    self.logger.info(f"  ✓ Feature importance saved to {fi_path}")
+                except Exception as e:
+                    self.logger.warning(f"  ✗ Could not create feature importance plot: {e}")
+
+                # Optuna Optimization History
+                try:
+                    opt_hist_path = self._plot_optimization_history(study)
+                    mlflow.log_artifact(opt_hist_path, artifact_path="optuna")
+                    self.logger.info(f"  ✓ Optimization history saved to {opt_hist_path}")
+                except Exception as e:
+                    self.logger.warning(f"  ✗ Could not create optimization history: {e}")
+
+                # Parameter Importances
+                param_imp_path = self._plot_param_importances(study)
+                if param_imp_path:
+                    mlflow.log_artifact(param_imp_path, artifact_path="optuna")
+                    self.logger.info(f"  ✓ Parameter importances saved to {param_imp_path}")
+
+                # Parameter Slice Plot
+                param_slice_path = self._plot_param_slice(study)
+                if param_slice_path:
+                    mlflow.log_artifact(param_slice_path, artifact_path="optuna")
+                    self.logger.info(f"  ✓ Parameter slice plot saved to {param_slice_path}")
+
+                # Log the best model
+                try:
+                    mlflow.sklearn.log_model(
+                        pipeline,
+                        artifact_path="best_model",
+                        registered_model_name=f"{self.job_name}_best_model",
+                    )
+                    self.logger.info("  ✓ Best model logged to MLflow")
+                except Exception as e:
+                    self.logger.warning(f"  ✗ Could not log model: {e}")
+
+                # Log class distribution information
+                self._log_class_distribution()
+
                 # Log config files
                 mlflow.log_artifact("confs/training.yaml", artifact_path="config")
                 mlflow.log_artifact("confs/tuning.yaml", artifact_path="config")
 
+                # Log study statistics
+                mlflow.log_param("n_completed_trials", len(study.trials))
+                mlflow.log_param(
+                    "n_pruned_trials",
+                    len([t for t in study.trials if t.state == optuna.trial.TrialState.PRUNED]),
+                )
+                mlflow.log_param(
+                    "n_failed_trials",
+                    len([t for t in study.trials if t.state == optuna.trial.TrialState.FAIL]),
+                )
+
                 self.logger.info("\nMLflow:")
                 self.logger.info(f"  Experiment: {self.job_name}")
                 self.logger.info("  Study logged successfully")
+                self.logger.info("  Visualizations and artifacts logged")
                 self.logger.info("\nLogs saved to: logs/tuning.log")
                 self.logger.info("=" * 80)
 
@@ -433,3 +546,54 @@ class HyperparameterTuningPipeline:
         except Exception as e:
             self.logger.error(f"Hyperparameter tuning failed: {e}")
             raise
+
+    #### Hyperparameter tuning specific plotting tools
+    def _plot_optimization_history(self, study: optuna.Study) -> str:
+        """Create and save Optuna optimization history plot.
+
+        Args:
+            study: Completed Optuna study.
+
+        Returns:
+            Path to saved figure.
+        """
+        fig = plot_optimization_history(study)
+        fig_path = "outputs/optimization_history.html"
+        fig.write_html(fig_path)
+        return fig_path
+
+    def _plot_param_importances(self, study: optuna.Study) -> str:
+        """Create and save parameter importance plot.
+
+        Args:
+            study: Completed Optuna study.
+
+        Returns:
+            Path to saved figure.
+        """
+        try:
+            fig = plot_param_importances(study)
+            fig_path = "outputs/param_importances.html"
+            fig.write_html(fig_path)
+            return fig_path
+        except Exception as e:
+            self.logger.warning(f"Could not create parameter importance plot: {e}")
+            return None
+
+    def _plot_param_slice(self, study: optuna.Study) -> str:
+        """Create and save parameter slice plot.
+
+        Args:
+            study: Completed Optuna study.
+
+        Returns:
+            Path to saved figure.
+        """
+        try:
+            fig = plot_slice(study)
+            fig_path = "outputs/param_slice.html"
+            fig.write_html(fig_path)
+            return fig_path
+        except Exception as e:
+            self.logger.warning(f"Could not create parameter slice plot: {e}")
+            return None
