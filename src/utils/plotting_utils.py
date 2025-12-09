@@ -16,7 +16,11 @@ from sklearn.metrics import (
     roc_curve,
 )
 
+from typing import Dict
+
 from sklearn.pipeline import Pipeline
+import mlflow
+import logging
 
 
 def save_plot(output_path: str, dpi: int = 150) -> str:
@@ -40,13 +44,17 @@ def save_plot(output_path: str, dpi: int = 150) -> str:
 
 
 def plot_confusion_matrix(
-    y_true: pd.Series, y_pred: np.ndarray, title: str = "Confusion Matrix"
+    y_true: pd.Series,
+    y_pred: np.ndarray,
+    output_path: str = "outputs/confusion_matrix.png",
+    title: str = "Confusion Matrix",
 ) -> str:
     """Create and save confusion matrix plot.
 
     Args:
         y_true: True labels.
         y_pred: Predicted labels.
+        output_path: Path where the figure should be saved.
         title: Title for the plot.
 
     Returns:
@@ -81,16 +89,21 @@ def plot_confusion_matrix(
                 color="gray",
             )
 
-    fig_path = "outputs/confusion_matrix.png"
-    return save_plot(fig_path)
+    return save_plot(output_path)
 
 
-def plot_roc_curve(y_true: pd.Series, y_pred_proba: np.ndarray, title: str = "ROC Curve") -> str:
+def plot_roc_curve(
+    y_true: pd.Series,
+    y_pred_proba: np.ndarray,
+    output_path: str = "outputs/roc_curve.png",
+    title: str = "ROC Curve",
+) -> str:
     """Create and save ROC curve plot.
 
     Args:
         y_true: True labels.
         y_pred_proba: Predicted probabilities for positive class.
+        output_path: Path where the figure should be saved.
         title: Title for the plot.
 
     Returns:
@@ -110,15 +123,19 @@ def plot_roc_curve(y_true: pd.Series, y_pred_proba: np.ndarray, title: str = "RO
     plt.legend(loc="lower right")
     plt.grid(alpha=0.3)
 
-    fig_path = "outputs/roc_curve.png"
-    return save_plot(fig_path)
+    return save_plot(output_path)
 
 
-def plot_feature_importance(pipeline: Pipeline, top_n: int = 20) -> str:
+def plot_feature_importance(
+    pipeline: Pipeline,
+    output_path: str = "outputs/feature_importance.png",
+    top_n: int = 20,
+) -> str:
     """Create and save feature importance plot for XGBoost model.
 
     Args:
         pipeline: Trained sklearn pipeline with XGBoost classifier.
+        output_path: Path where the figure should be saved.
         top_n: Number of top features to display.
 
     Returns:
@@ -160,5 +177,65 @@ def plot_feature_importance(pipeline: Pipeline, top_n: int = 20) -> str:
     plt.gca().invert_yaxis()
     plt.grid(axis="x", alpha=0.3)
 
-    fig_path = "outputs/feature_importance.png"
-    return save_plot(fig_path)
+    return save_plot(output_path)
+
+
+def create_and_log_plots(
+    y_true: pd.Series,
+    y_pred: np.ndarray,
+    y_pred_proba: np.ndarray,
+    pipeline: Pipeline,
+    output_dir: str = "outputs",
+    log_to_mlflow: bool = True,
+) -> Dict[str, str]:
+    """Create all standard plots and optionally log to MLflow.
+
+    Args:
+        y_true: True labels
+        y_pred: Predicted labels
+        y_pred_proba: Predicted probabilities
+        pipeline: Trained pipeline
+        output_dir: Directory for outputs
+        log_to_mlflow: Whether to log artifacts to MLflow
+
+    Returns:
+        Dictionary of visualization_name: file_path
+    """
+    logger = logging.getLogger(__name__)
+    plot_paths = {}
+
+    # Confusion Matrix
+    try:
+        cm_path = plot_confusion_matrix(
+            y_true, y_pred, output_path=f"{output_dir}/confusion_matrix.png"
+        )
+        plot_paths["confusion_matrix"] = cm_path
+        if log_to_mlflow:
+            mlflow.log_artifact(cm_path, "visualizations")
+        logger.info(f"Confusion matrix saved: {cm_path}")
+    except Exception as e:
+        logger.warning(f"Confusion matrix failed to save: {e}")
+
+    # ROC Curve
+    try:
+        roc_path = plot_roc_curve(y_true, y_pred_proba, output_path=f"{output_dir}/roc_curve.png")
+        plot_paths["roc_curve"] = roc_path
+        if log_to_mlflow:
+            mlflow.log_artifact(roc_path, "visualizations")
+        logger.info(f"ROC curve saved: {roc_path}")
+    except Exception as e:
+        logger.warning(f"ROC curve failed to save: {e}")
+
+    # Feature Importance
+    try:
+        fi_path = plot_feature_importance(
+            pipeline, output_path=f"{output_dir}/feature_importance.png"
+        )
+        plot_paths["feature_importance"] = fi_path
+        if log_to_mlflow:
+            mlflow.log_artifact(fi_path, "visualizations")
+        logger.info(f"Feature importance plot saved: {fi_path}")
+    except Exception as e:
+        logger.warning(f"Feature importance plot failed to save: {e}")
+
+    return plot_paths

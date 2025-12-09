@@ -1,6 +1,6 @@
 study:
   direction: maximize
-  n_trials: 50
+  n_trials: 100
   random_state: 42
 
 params:
@@ -13,7 +13,7 @@ params:
   max_depth:
     type: int
     low: 2
-    high: 10
+    high: 15
     step: 1
 
   min_child_weight:
@@ -45,9 +45,9 @@ params:
     low: 0.0
     high: 0.5
 
-  scale_post_weight:  # For handling class imbalance, should be approx. (len(y) - np.sum(y)) / np.sum(y)
+  scale_pos_weight:  # For handling class imbalance, should be approx. (len(y) - np.sum(y)) / np.sum(y)
     type: float
-    low: 4.0
+    low: 3.0
     high: 10.0
 
   subsample:
