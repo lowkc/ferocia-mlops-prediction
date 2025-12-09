@@ -9,6 +9,8 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from pathlib import Path
 
+from numpy.typing import NDArray
+
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 from xgboost import XGBClassifier
@@ -64,8 +66,8 @@ class TrainingPipeline:
         self.pipeline: Pipeline | None = None
         self.train_metrics: Dict[str, float] = {}
         self.test_metrics: Dict[str, float] = {}
-        self.train_predictions: Dict[str, float] = {}
-        self.test_predictions: Dict[str, float] = {}
+        self.train_predictions: Dict[str, NDArray] = {}
+        self.test_predictions: Dict[str, NDArray] = {}
         self.label_encoder: LabelEncoder | None = None
 
         self.logger = self._setup_logger()

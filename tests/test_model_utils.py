@@ -7,7 +7,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 
-from utils.model_utils import (
+from typing import Dict
+
+from src.utils.model_utils import (
     calculate_metrics,
     log_model_to_mlflow,
     log_metrics_to_mlflow,
@@ -159,8 +161,8 @@ class TestCalculateMetrics:
 class TestLogModelToMLflow:
     """Tests for log_model_to_mlflow function."""
 
-    @patch("utils.model_utils.mlflow.sklearn.log_model")
-    @patch("utils.model_utils.infer_signature")
+    @patch("src.utils.model_utils.mlflow.sklearn.log_model")
+    @patch("src.utils.model_utils.infer_signature")
     def test_log_model_with_signature(self, mock_infer_signature, mock_log_model):
         """Test logging model with signature inference."""
         # Create a simple pipeline
@@ -192,7 +194,7 @@ class TestLogModelToMLflow:
             signature=mock_signature,
         )
 
-    @patch("utils.model_utils.mlflow.sklearn.log_model")
+    @patch("src.utils.model_utils.mlflow.sklearn.log_model")
     def test_log_model_without_signature(self, mock_log_model):
         """Test logging model without signature inference."""
         pipeline = Pipeline([("scaler", StandardScaler()), ("classifier", LogisticRegression())])
@@ -203,8 +205,8 @@ class TestLogModelToMLflow:
             pipeline, name="test_model", registered_model_name=None, signature=None
         )
 
-    @patch("utils.model_utils.mlflow.sklearn.log_model")
-    @patch("utils.model_utils.infer_signature")
+    @patch("src.utils.model_utils.mlflow.sklearn.log_model")
+    @patch("src.utils.model_utils.infer_signature")
     def test_log_model_with_empty_dataframe(self, mock_infer_signature, mock_log_model):
         """Test logging model with empty training dataframe."""
         pipeline = Pipeline([("scaler", StandardScaler()), ("classifier", LogisticRegression())])
@@ -219,8 +221,8 @@ class TestLogModelToMLflow:
             pipeline, name="test_model", registered_model_name=None, signature=None
         )
 
-    @patch("utils.model_utils.mlflow.sklearn.log_model")
-    @patch("utils.model_utils.infer_signature")
+    @patch("src.utils.model_utils.mlflow.sklearn.log_model")
+    @patch("src.utils.model_utils.infer_signature")
     def test_log_model_with_none_x_train(self, mock_infer_signature, mock_log_model):
         """Test logging model with None x_train."""
         pipeline = Pipeline([("scaler", StandardScaler()), ("classifier", LogisticRegression())])
@@ -236,7 +238,7 @@ class TestLogModelToMLflow:
 class TestLogMetricsToMLflow:
     """Tests for log_metrics_to_mlflow function."""
 
-    @patch("utils.model_utils.mlflow.log_metrics")
+    @patch("src.utils.model_utils.mlflow.log_metrics")
     def test_log_metrics_without_prefix(self, mock_log_metrics):
         """Test logging metrics without prefix."""
         metrics = {"accuracy": 0.85, "precision": 0.80, "recall": 0.75, "f1_score": 0.77}
@@ -245,7 +247,7 @@ class TestLogMetricsToMLflow:
 
         mock_log_metrics.assert_called_once_with(metrics)
 
-    @patch("utils.model_utils.mlflow.log_metrics")
+    @patch("src.utils.model_utils.mlflow.log_metrics")
     def test_log_metrics_with_prefix(self, mock_log_metrics):
         """Test logging metrics with prefix."""
         metrics = {"accuracy": 0.85, "precision": 0.80, "recall": 0.75}
@@ -255,16 +257,16 @@ class TestLogMetricsToMLflow:
         expected_metrics = {"test_accuracy": 0.85, "test_precision": 0.80, "test_recall": 0.75}
         mock_log_metrics.assert_called_once_with(expected_metrics)
 
-    @patch("utils.model_utils.mlflow.log_metrics")
+    @patch("src.utils.model_utils.mlflow.log_metrics")
     def test_log_metrics_empty_dict(self, mock_log_metrics):
         """Test logging empty metrics dictionary."""
-        metrics = {}
+        metrics: Dict[str, float] = {}
 
         log_metrics_to_mlflow(metrics)
 
         mock_log_metrics.assert_called_once_with({})
 
-    @patch("utils.model_utils.mlflow.log_metrics")
+    @patch("src.utils.model_utils.mlflow.log_metrics")
     def test_log_metrics_with_various_values(self, mock_log_metrics):
         """Test logging metrics with various numeric values."""
         metrics = {"metric1": 0.0, "metric2": 1.0, "metric3": 0.5555555, "metric4": 100}
@@ -283,7 +285,7 @@ class TestLogMetricsToMLflow:
 class TestLogClassDistribution:
     """Tests for log_class_distribution function."""
 
-    @patch("utils.model_utils.mlflow.log_param")
+    @patch("src.utils.model_utils.mlflow.log_param")
     def test_log_class_distribution_balanced(self, mock_log_param):
         """Test logging class distribution for balanced dataset."""
         y_train = pd.Series([0, 0, 1, 1, 0, 0, 1, 1])
@@ -306,7 +308,7 @@ class TestLogClassDistribution:
         assert mock_log_param.call_count == 8
         mock_log_param.assert_has_calls(expected_calls, any_order=True)
 
-    @patch("utils.model_utils.mlflow.log_param")
+    @patch("src.utils.model_utils.mlflow.log_param")
     def test_log_class_distribution_imbalanced(self, mock_log_param):
         """Test logging class distribution for imbalanced dataset."""
         y_train = pd.Series([0, 0, 0, 0, 0, 0, 0, 1, 1, 1])  # 70% class 0, 30% class 1
@@ -326,7 +328,7 @@ class TestLogClassDistribution:
         assert calls["test_class_0_pct"] == 75.0
         assert calls["test_class_1_pct"] == 25.0
 
-    @patch("utils.model_utils.mlflow.log_param")
+    @patch("src.utils.model_utils.mlflow.log_param")
     def test_log_class_distribution_all_one_class_train(self, mock_log_param):
         """Test logging when training set has only one class."""
         y_train = pd.Series([0, 0, 0, 0])
@@ -341,7 +343,7 @@ class TestLogClassDistribution:
         assert calls["train_class_0_pct"] == 100.0
         assert calls["train_class_1_pct"] == 0.0
 
-    @patch("utils.model_utils.mlflow.log_param")
+    @patch("src.utils.model_utils.mlflow.log_param")
     def test_log_class_distribution_all_one_class_test(self, mock_log_param):
         """Test logging when test set has only one class."""
         y_train = pd.Series([0, 1, 0, 1])
@@ -356,7 +358,7 @@ class TestLogClassDistribution:
         assert calls["test_class_0_pct"] == 0.0
         assert calls["test_class_1_pct"] == 100.0
 
-    @patch("utils.model_utils.mlflow.log_param")
+    @patch("src.utils.model_utils.mlflow.log_param")
     def test_log_class_distribution_single_sample(self, mock_log_param):
         """Test logging with single sample datasets."""
         y_train = pd.Series([0])
@@ -375,7 +377,7 @@ class TestLogClassDistribution:
         assert calls["test_class_0_pct"] == 0.0
         assert calls["test_class_1_pct"] == 100.0
 
-    @patch("utils.model_utils.mlflow.log_param")
+    @patch("src.utils.model_utils.mlflow.log_param")
     def test_log_class_distribution_large_dataset(self, mock_log_param):
         """Test logging with large dataset."""
         # Create large imbalanced dataset

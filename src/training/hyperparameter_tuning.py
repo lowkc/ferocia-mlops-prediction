@@ -233,6 +233,9 @@ class HyperparameterTuningPipeline:
             for fold_idx, (train_idx, val_idx) in enumerate(
                 cv.split(self.x_train, self.y_train), 1
             ):
+                assert (self.x_train is not None) and (self.y_train is not None), (
+                    "Training data (x_train and y_train) must be initialized before splitting folds."
+                )
                 # Split data for this fold
                 x_train_fold = self.x_train.iloc[train_idx]
                 y_train_fold = self.y_train.iloc[train_idx]
@@ -479,7 +482,7 @@ class HyperparameterTuningPipeline:
         fig.write_html(fig_path)
         return fig_path
 
-    def _plot_param_importances(self, study: optuna.Study) -> str:
+    def _plot_param_importances(self, study: optuna.Study) -> str | None:
         """Create and save parameter importance plot.
 
         Args:
@@ -497,7 +500,7 @@ class HyperparameterTuningPipeline:
             self.logger.warning(f"Could not create parameter importance plot: {e}")
             return None
 
-    def _plot_param_slice(self, study: optuna.Study) -> str:
+    def _plot_param_slice(self, study: optuna.Study) -> str | None:
         """Create and save parameter slice plot.
 
         Args:

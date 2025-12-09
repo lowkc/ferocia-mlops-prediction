@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from xgboost import XGBClassifier
 
-from utils.plotting_utils import (
+from src.utils.plotting_utils import (
     save_plot,
     plot_confusion_matrix,
     plot_roc_curve,
@@ -168,7 +168,7 @@ class TestPlotConfusionMatrix:
         y_true, y_pred, _ = sample_predictions
         output_path = tmp_path / "cm_custom.png"
 
-        with patch("utils.plotting_utils.plt.title") as mock_title:
+        with patch("src.utils.plotting_utils.plt.title") as mock_title:
             plot_confusion_matrix(y_true, y_pred, str(output_path), title="Custom Title")
             mock_title.assert_called_once_with("Custom Title")
 
@@ -177,7 +177,7 @@ class TestPlotConfusionMatrix:
         y_true, y_pred, _ = sample_predictions
         output_path = tmp_path / "cm_default.png"
 
-        with patch("utils.plotting_utils.plt.title") as mock_title:
+        with patch("src.utils.plotting_utils.plt.title") as mock_title:
             plot_confusion_matrix(y_true, y_pred, str(output_path))
             mock_title.assert_called_once_with("Confusion Matrix")
 
@@ -199,7 +199,7 @@ class TestPlotConfusionMatrix:
         finally:
             os.chdir(original_dir)
 
-    @patch("utils.plotting_utils.confusion_matrix")
+    @patch("src.utils.plotting_utils.confusion_matrix")
     def test_plot_confusion_matrix_calls_sklearn(self, mock_cm, tmp_path, sample_predictions):
         """Test that sklearn's confusion_matrix is called correctly."""
         y_true, y_pred, _ = sample_predictions
@@ -244,7 +244,7 @@ class TestPlotROCCurve:
         y_true, _, y_pred_proba = sample_predictions
         output_path = tmp_path / "roc_custom.png"
 
-        with patch("utils.plotting_utils.plt.title") as mock_title:
+        with patch("src.utils.plotting_utils.plt.title") as mock_title:
             plot_roc_curve(y_true, y_pred_proba, str(output_path), title="Custom ROC")
             mock_title.assert_called_once_with("Custom ROC")
 
@@ -253,12 +253,12 @@ class TestPlotROCCurve:
         y_true, _, y_pred_proba = sample_predictions
         output_path = tmp_path / "roc_default.png"
 
-        with patch("utils.plotting_utils.plt.title") as mock_title:
+        with patch("src.utils.plotting_utils.plt.title") as mock_title:
             plot_roc_curve(y_true, y_pred_proba, str(output_path))
             mock_title.assert_called_once_with("ROC Curve")
 
-    @patch("utils.plotting_utils.roc_curve")
-    @patch("utils.plotting_utils.roc_auc_score")
+    @patch("src.utils.plotting_utils.roc_curve")
+    @patch("src.utils.plotting_utils.roc_auc_score")
     def test_plot_roc_curve_calls_sklearn(
         self, mock_roc_auc, mock_roc_curve, tmp_path, sample_predictions
     ):
@@ -370,10 +370,10 @@ class TestPlotFeatureImportance:
 class TestCreateAndLogPlots:
     """Tests for create_and_log_plots function."""
 
-    @patch("utils.plotting_utils.mlflow.log_artifact")
-    @patch("utils.plotting_utils.plot_confusion_matrix")
-    @patch("utils.plotting_utils.plot_roc_curve")
-    @patch("utils.plotting_utils.plot_feature_importance")
+    @patch("src.utils.plotting_utils.mlflow.log_artifact")
+    @patch("src.utils.plotting_utils.plot_confusion_matrix")
+    @patch("src.utils.plotting_utils.plot_roc_curve")
+    @patch("src.utils.plotting_utils.plot_feature_importance")
     def test_create_and_log_plots_all_success(
         self,
         mock_fi,
@@ -401,10 +401,10 @@ class TestCreateAndLogPlots:
         # Verify MLflow logging
         assert mock_log_artifact.call_count == 3
 
-    @patch("utils.plotting_utils.mlflow.log_artifact")
-    @patch("utils.plotting_utils.plot_confusion_matrix")
-    @patch("utils.plotting_utils.plot_roc_curve")
-    @patch("utils.plotting_utils.plot_feature_importance")
+    @patch("src.utils.plotting_utils.mlflow.log_artifact")
+    @patch("src.utils.plotting_utils.plot_confusion_matrix")
+    @patch("src.utils.plotting_utils.plot_roc_curve")
+    @patch("src.utils.plotting_utils.plot_feature_importance")
     def test_create_and_log_plots_without_mlflow(
         self,
         mock_fi,
@@ -435,10 +435,10 @@ class TestCreateAndLogPlots:
         assert len(result) == 3
         mock_log_artifact.assert_not_called()
 
-    @patch("utils.plotting_utils.mlflow.log_artifact")
-    @patch("utils.plotting_utils.plot_confusion_matrix")
-    @patch("utils.plotting_utils.plot_roc_curve")
-    @patch("utils.plotting_utils.plot_feature_importance")
+    @patch("src.utils.plotting_utils.mlflow.log_artifact")
+    @patch("src.utils.plotting_utils.plot_confusion_matrix")
+    @patch("src.utils.plotting_utils.plot_roc_curve")
+    @patch("src.utils.plotting_utils.plot_feature_importance")
     def test_create_and_log_plots_handles_cm_failure(
         self,
         mock_fi,
@@ -463,10 +463,10 @@ class TestCreateAndLogPlots:
         assert "roc_curve" in result
         assert "feature_importance" in result
 
-    @patch("utils.plotting_utils.mlflow.log_artifact")
-    @patch("utils.plotting_utils.plot_confusion_matrix")
-    @patch("utils.plotting_utils.plot_roc_curve")
-    @patch("utils.plotting_utils.plot_feature_importance")
+    @patch("src.utils.plotting_utils.mlflow.log_artifact")
+    @patch("src.utils.plotting_utils.plot_confusion_matrix")
+    @patch("src.utils.plotting_utils.plot_roc_curve")
+    @patch("src.utils.plotting_utils.plot_feature_importance")
     def test_create_and_log_plots_handles_roc_failure(
         self,
         mock_fi,
@@ -491,10 +491,10 @@ class TestCreateAndLogPlots:
         assert "roc_curve" not in result
         assert "feature_importance" in result
 
-    @patch("utils.plotting_utils.mlflow.log_artifact")
-    @patch("utils.plotting_utils.plot_confusion_matrix")
-    @patch("utils.plotting_utils.plot_roc_curve")
-    @patch("utils.plotting_utils.plot_feature_importance")
+    @patch("src.utils.plotting_utils.mlflow.log_artifact")
+    @patch("src.utils.plotting_utils.plot_confusion_matrix")
+    @patch("src.utils.plotting_utils.plot_roc_curve")
+    @patch("src.utils.plotting_utils.plot_feature_importance")
     def test_create_and_log_plots_handles_fi_failure(
         self,
         mock_fi,
@@ -519,10 +519,10 @@ class TestCreateAndLogPlots:
         assert "roc_curve" in result
         assert "feature_importance" not in result
 
-    @patch("utils.plotting_utils.mlflow.log_artifact")
-    @patch("utils.plotting_utils.plot_confusion_matrix")
-    @patch("utils.plotting_utils.plot_roc_curve")
-    @patch("utils.plotting_utils.plot_feature_importance")
+    @patch("src.utils.plotting_utils.mlflow.log_artifact")
+    @patch("src.utils.plotting_utils.plot_confusion_matrix")
+    @patch("src.utils.plotting_utils.plot_roc_curve")
+    @patch("src.utils.plotting_utils.plot_feature_importance")
     def test_create_and_log_plots_all_failures(
         self,
         mock_fi,
@@ -546,10 +546,10 @@ class TestCreateAndLogPlots:
         assert len(result) == 0
         mock_log_artifact.assert_not_called()
 
-    @patch("utils.plotting_utils.mlflow.log_artifact")
-    @patch("utils.plotting_utils.plot_confusion_matrix")
-    @patch("utils.plotting_utils.plot_roc_curve")
-    @patch("utils.plotting_utils.plot_feature_importance")
+    @patch("src.utils.plotting_utils.mlflow.log_artifact")
+    @patch("src.utils.plotting_utils.plot_confusion_matrix")
+    @patch("src.utils.plotting_utils.plot_roc_curve")
+    @patch("src.utils.plotting_utils.plot_feature_importance")
     def test_create_and_log_plots_custom_output_dir(
         self,
         mock_fi,
@@ -574,10 +574,10 @@ class TestCreateAndLogPlots:
         cm_call_args = mock_cm.call_args[1]
         assert str(custom_dir) in cm_call_args["output_path"]
 
-    @patch("utils.plotting_utils.mlflow.log_artifact")
-    @patch("utils.plotting_utils.plot_confusion_matrix")
-    @patch("utils.plotting_utils.plot_roc_curve")
-    @patch("utils.plotting_utils.plot_feature_importance")
+    @patch("src.utils.plotting_utils.mlflow.log_artifact")
+    @patch("src.utils.plotting_utils.plot_confusion_matrix")
+    @patch("src.utils.plotting_utils.plot_roc_curve")
+    @patch("src.utils.plotting_utils.plot_feature_importance")
     def test_create_and_log_plots_default_output_dir(
         self,
         mock_fi,

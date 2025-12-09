@@ -7,13 +7,13 @@ import pandas as pd
 import pytest
 import optuna
 
-from entities.configs import (
+from src.entities.configs import (
     TrainingDataConfig,
     FeatureConfig,
     ModelConfig,
     TuningConfig,
 )
-from training.hyperparameter_tuning import HyperparameterTuningPipeline
+from src.training.hyperparameter_tuning import HyperparameterTuningPipeline
 
 
 @pytest.fixture
@@ -44,7 +44,7 @@ def tuning_config():
 class TestHyperparameterTuningPipelineInit:
     """Tests for HyperparameterTuningPipeline initialization."""
 
-    @patch("training.hyperparameter_tuning.mlflow.set_experiment")
+    @patch("src.training.hyperparameter_tuning.mlflow.set_experiment")
     def test_initialization(self, mock_set_experiment):
         """Test pipeline initialization."""
         data_config = TrainingDataConfig()
@@ -137,6 +137,11 @@ class TestHyperparameterTuningPipelineLoadData:
         )
 
         pipeline.load_data()
+
+        assert pipeline.x_train is not None
+        assert pipeline.x_test is not None
+        assert pipeline.y_train is not None
+        assert pipeline.y_test is not None
 
         assert len(pipeline.x_train) == 5
         assert len(pipeline.x_test) == 2
@@ -298,11 +303,11 @@ class TestSuggestHyperparameters:
 class TestObjectiveFunction:
     """Tests for _objective method."""
 
-    @patch("training.hyperparameter_tuning.mlflow.set_experiment")
-    @patch("training.hyperparameter_tuning.mlflow.start_run")
-    @patch("training.hyperparameter_tuning.mlflow.log_params")
-    @patch("training.hyperparameter_tuning.mlflow.log_param")
-    @patch("training.hyperparameter_tuning.mlflow.log_metrics")
+    @patch("src.training.hyperparameter_tuning.mlflow.set_experiment")
+    @patch("src.training.hyperparameter_tuning.mlflow.start_run")
+    @patch("src.training.hyperparameter_tuning.mlflow.log_params")
+    @patch("src.training.hyperparameter_tuning.mlflow.log_param")
+    @patch("src.training.hyperparameter_tuning.mlflow.log_metrics")
     def test_objective_runs_cv(
         self,
         mock_log_metrics,
@@ -355,7 +360,7 @@ class TestObjectiveFunction:
         mock_log_param.assert_called()
         mock_log_metrics.assert_called()
 
-    @patch("training.hyperparameter_tuning.mlflow.set_experiment")
+    @patch("src.training.hyperparameter_tuning.mlflow.set_experiment")
     def test_objective_unsupported_model_type(self, mock_set_experiment, sample_data):
         """Test error handling for unsupported model type."""
         x_train, x_test, y_train, y_test = sample_data
@@ -383,7 +388,7 @@ class TestObjectiveFunction:
         trial = Mock(spec=optuna.Trial)
         trial.number = 0
 
-        with patch("training.hyperparameter_tuning.mlflow.start_run"):
+        with patch("src.training.hyperparameter_tuning.mlflow.start_run"):
             with pytest.raises(ValueError, match="Unsupported model type"):
                 pipeline._objective(trial)
 
@@ -391,7 +396,7 @@ class TestObjectiveFunction:
 class TestPlotMethods:
     """Tests for plotting methods."""
 
-    @patch("training.hyperparameter_tuning.mlflow.set_experiment")
+    @patch("src.training.hyperparameter_tuning.mlflow.set_experiment")
     def test_plot_optimization_history(self, mock_set_experiment):
         """Test optimization history plot creation."""
         pipeline = HyperparameterTuningPipeline(
@@ -404,7 +409,7 @@ class TestPlotMethods:
 
         study = Mock(spec=optuna.Study)
 
-        with patch("training.hyperparameter_tuning.plot_optimization_history") as mock_plot:
+        with patch("src.training.hyperparameter_tuning.plot_optimization_history") as mock_plot:
             mock_fig = Mock()
             mock_fig.write_html = Mock()
             mock_plot.return_value = mock_fig
@@ -415,7 +420,7 @@ class TestPlotMethods:
             mock_plot.assert_called_once_with(study)
             mock_fig.write_html.assert_called_once()
 
-    @patch("training.hyperparameter_tuning.mlflow.set_experiment")
+    @patch("src.training.hyperparameter_tuning.mlflow.set_experiment")
     def test_plot_param_importances_success(self, mock_set_experiment):
         """Test parameter importance plot creation."""
         pipeline = HyperparameterTuningPipeline(
@@ -428,17 +433,18 @@ class TestPlotMethods:
 
         study = Mock(spec=optuna.Study)
 
-        with patch("training.hyperparameter_tuning.plot_param_importances") as mock_plot:
+        with patch("src.training.hyperparameter_tuning.plot_param_importances") as mock_plot:
             mock_fig = Mock()
             mock_fig.write_html = Mock()
             mock_plot.return_value = mock_fig
 
             result = pipeline._plot_param_importances(study)
 
+            assert result is not None
             assert "param_importances.html" in result
             mock_plot.assert_called_once_with(study)
 
-    @patch("training.hyperparameter_tuning.mlflow.set_experiment")
+    @patch("src.training.hyperparameter_tuning.mlflow.set_experiment")
     def test_plot_param_importances_failure(self, mock_set_experiment):
         """Test parameter importance plot handles errors."""
         pipeline = HyperparameterTuningPipeline(
@@ -451,14 +457,14 @@ class TestPlotMethods:
 
         study = Mock(spec=optuna.Study)
 
-        with patch("training.hyperparameter_tuning.plot_param_importances") as mock_plot:
+        with patch("src.training.hyperparameter_tuning.plot_param_importances") as mock_plot:
             mock_plot.side_effect = Exception("Plot failed")
 
             result = pipeline._plot_param_importances(study)
 
             assert result is None
 
-    @patch("training.hyperparameter_tuning.mlflow.set_experiment")
+    @patch("src.training.hyperparameter_tuning.mlflow.set_experiment")
     def test_plot_param_slice_success(self, mock_set_experiment):
         """Test parameter slice plot creation."""
         pipeline = HyperparameterTuningPipeline(
@@ -471,17 +477,18 @@ class TestPlotMethods:
 
         study = Mock(spec=optuna.Study)
 
-        with patch("training.hyperparameter_tuning.plot_slice") as mock_plot:
+        with patch("src.training.hyperparameter_tuning.plot_slice") as mock_plot:
             mock_fig = Mock()
             mock_fig.write_html = Mock()
             mock_plot.return_value = mock_fig
 
             result = pipeline._plot_param_slice(study)
 
+            assert result is not None
             assert "param_slice.html" in result
             mock_plot.assert_called_once_with(study)
 
-    @patch("training.hyperparameter_tuning.mlflow.set_experiment")
+    @patch("src.training.hyperparameter_tuning.mlflow.set_experiment")
     def test_plot_param_slice_failure(self, mock_set_experiment):
         """Test parameter slice plot handles errors."""
         pipeline = HyperparameterTuningPipeline(
@@ -494,7 +501,7 @@ class TestPlotMethods:
 
         study = Mock(spec=optuna.Study)
 
-        with patch("training.hyperparameter_tuning.plot_slice") as mock_plot:
+        with patch("src.training.hyperparameter_tuning.plot_slice") as mock_plot:
             mock_plot.side_effect = Exception("Plot failed")
 
             result = pipeline._plot_param_slice(study)
@@ -505,16 +512,16 @@ class TestPlotMethods:
 class TestRunMethod:
     """Tests for run method (integration test)."""
 
-    @patch("training.hyperparameter_tuning.mlflow.set_experiment")
-    @patch("training.hyperparameter_tuning.mlflow.start_run")
-    @patch("training.hyperparameter_tuning.mlflow.log_params")
-    @patch("training.hyperparameter_tuning.mlflow.log_param")
-    @patch("training.hyperparameter_tuning.mlflow.log_metrics")
-    @patch("training.hyperparameter_tuning.mlflow.log_metric")
-    @patch("training.hyperparameter_tuning.mlflow.log_artifact")
-    @patch("training.hyperparameter_tuning.log_model_to_mlflow")
-    @patch("training.hyperparameter_tuning.log_class_distribution")
-    @patch("training.hyperparameter_tuning.create_and_log_plots")
+    @patch("src.training.hyperparameter_tuning.mlflow.set_experiment")
+    @patch("src.training.hyperparameter_tuning.mlflow.start_run")
+    @patch("src.training.hyperparameter_tuning.mlflow.log_params")
+    @patch("src.training.hyperparameter_tuning.mlflow.log_param")
+    @patch("src.training.hyperparameter_tuning.mlflow.log_metrics")
+    @patch("src.training.hyperparameter_tuning.mlflow.log_metric")
+    @patch("src.training.hyperparameter_tuning.mlflow.log_artifact")
+    @patch("src.training.hyperparameter_tuning.log_model_to_mlflow")
+    @patch("src.training.hyperparameter_tuning.log_class_distribution")
+    @patch("src.training.hyperparameter_tuning.create_and_log_plots")
     def test_run_complete_pipeline(
         self,
         mock_plots,
@@ -590,7 +597,7 @@ class TestRunMethod:
         assert mock_start_run.call_count >= 1
         assert mock_log_params.call_count >= 1
 
-    @patch("training.hyperparameter_tuning.mlflow.set_experiment")
+    @patch("src.training.hyperparameter_tuning.mlflow.set_experiment")
     def test_run_with_missing_data(self, mock_set_experiment):
         """Test error handling when data loading fails."""
         data_config = TrainingDataConfig(
