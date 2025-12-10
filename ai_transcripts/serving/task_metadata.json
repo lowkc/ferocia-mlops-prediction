@@ -1,0 +1,309 @@
+{
+  "files_in_context": [
+    {
+      "path": "confs/deployment.yaml",
+      "record_state": "stale",
+      "record_source": "read_tool",
+      "cline_read_date": 1765326391127,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "Dockerfile",
+      "record_state": "stale",
+      "record_source": "read_tool",
+      "cline_read_date": 1765326393317,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "pyproject.toml",
+      "record_state": "stale",
+      "record_source": "read_tool",
+      "cline_read_date": 1765326395635,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/preprocessing/data_preprocessing.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765326401011,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/training/training_pipeline.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765326403939,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/entities/configs.py",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765326407653,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "tools/download_mlflow_model.py",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765326584366,
+      "cline_edit_date": 1765326584366,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/serving/predictor.py",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765326602735,
+      "cline_edit_date": 1765326602735,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/serving/api.py",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765326631488,
+      "cline_edit_date": 1765326631488,
+      "user_edit_date": null
+    },
+    {
+      "path": "pyproject.toml",
+      "record_state": "stale",
+      "record_source": "read_tool",
+      "cline_read_date": 1765326634335,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "pyproject.toml",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765326644034,
+      "cline_edit_date": 1765326644034,
+      "user_edit_date": null
+    },
+    {
+      "path": "confs/deployment.yaml",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765326651621,
+      "cline_edit_date": 1765326651621,
+      "user_edit_date": null
+    },
+    {
+      "path": "Dockerfile",
+      "record_state": "stale",
+      "record_source": "read_tool",
+      "cline_read_date": 1765326654511,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "Dockerfile",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765327019868,
+      "cline_edit_date": 1765327019868,
+      "user_edit_date": null
+    },
+    {
+      "path": "example_request.json",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765327031067,
+      "cline_edit_date": 1765327031067,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/serving/__init__.py",
+      "record_state": "active",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765327037057,
+      "cline_edit_date": 1765327037057,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/serving/README.md",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765327062124,
+      "cline_edit_date": 1765327062124,
+      "user_edit_date": null
+    },
+    {
+      "path": "confs/training.yaml",
+      "record_state": "active",
+      "record_source": "read_tool",
+      "cline_read_date": 1765328411774,
+      "cline_edit_date": null,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/serving/api.py",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765328436913,
+      "cline_edit_date": 1765328436913,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/serving/api.py",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765328446702,
+      "cline_edit_date": 1765328446702,
+      "user_edit_date": null
+    },
+    {
+      "path": "example_request.json",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765328453773,
+      "cline_edit_date": 1765328453773,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/serving/api.py",
+      "record_state": "stale",
+      "record_source": "user_edited",
+      "cline_read_date": 1765328446702,
+      "cline_edit_date": 1765328446702,
+      "user_edit_date": 1765328477075
+    },
+    {
+      "path": "src/serving/api.py",
+      "record_state": "stale",
+      "record_source": "user_edited",
+      "cline_read_date": 1765328446702,
+      "cline_edit_date": 1765328446702,
+      "user_edit_date": 1765328481548
+    },
+    {
+      "path": "src/serving/api.py",
+      "record_state": "stale",
+      "record_source": "user_edited",
+      "cline_read_date": 1765328446702,
+      "cline_edit_date": 1765328446702,
+      "user_edit_date": 1765328488750
+    },
+    {
+      "path": "src/serving/README.md",
+      "record_state": "stale",
+      "record_source": "read_tool",
+      "cline_read_date": 1765328522229,
+      "cline_edit_date": 1765327062124,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/serving/README.md",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765328532137,
+      "cline_edit_date": 1765328532137,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/serving/README.md",
+      "record_state": "stale",
+      "record_source": "cline_edited",
+      "cline_read_date": 1765328541939,
+      "cline_edit_date": 1765328541939,
+      "user_edit_date": null
+    },
+    {
+      "path": "src/serving/README.md",
+      "record_state": "stale",
+      "record_source": "user_edited",
+      "cline_read_date": 1765328541939,
+      "cline_edit_date": 1765328541939,
+      "user_edit_date": 1765330017543
+    },
+    {
+      "path": "src/serving/README.md",
+      "record_state": "stale",
+      "record_source": "user_edited",
+      "cline_read_date": 1765328541939,
+      "cline_edit_date": 1765328541939,
+      "user_edit_date": 1765330024823
+    },
+    {
+      "path": "src/serving/README.md",
+      "record_state": "active",
+      "record_source": "user_edited",
+      "cline_read_date": 1765328541939,
+      "cline_edit_date": 1765328541939,
+      "user_edit_date": 1765330026169
+    },
+    {
+      "path": "example_request.json",
+      "record_state": "stale",
+      "record_source": "user_edited",
+      "cline_read_date": 1765328453773,
+      "cline_edit_date": 1765328453773,
+      "user_edit_date": 1765330138582
+    },
+    {
+      "path": "example_request.json",
+      "record_state": "stale",
+      "record_source": "user_edited",
+      "cline_read_date": 1765328453773,
+      "cline_edit_date": 1765328453773,
+      "user_edit_date": 1765330157009
+    },
+    {
+      "path": "example_request.json",
+      "record_state": "active",
+      "record_source": "user_edited",
+      "cline_read_date": 1765328453773,
+      "cline_edit_date": 1765328453773,
+      "user_edit_date": 1765330222456
+    },
+    {
+      "path": "src/serving/api.py",
+      "record_state": "stale",
+      "record_source": "user_edited",
+      "cline_read_date": 1765328446702,
+      "cline_edit_date": 1765328446702,
+      "user_edit_date": 1765330290326
+    },
+    {
+      "path": "src/serving/api.py",
+      "record_state": "active",
+      "record_source": "user_edited",
+      "cline_read_date": 1765328446702,
+      "cline_edit_date": 1765328446702,
+      "user_edit_date": 1765330290779
+    }
+  ],
+  "model_usage": [
+    {
+      "ts": 1765326380502,
+      "model_id": "au-claude-sonnet-4.5",
+      "model_provider_id": "litellm",
+      "mode": "plan"
+    },
+    {
+      "ts": 1765326481115,
+      "model_id": "au-claude-sonnet-4.5",
+      "model_provider_id": "litellm",
+      "mode": "act"
+    }
+  ],
+  "environment_history": [
+    {
+      "ts": 1765326380500,
+      "os_name": "darwin",
+      "os_version": "25.1.0",
+      "os_arch": "arm64",
+      "host_name": "Visual Studio Code",
+      "host_version": "1.106.3",
+      "cline_version": "3.40.1"
+    }
+  ]
+}
