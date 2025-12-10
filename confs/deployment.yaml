@@ -1,0 +1,9 @@
+model:
+  name: "term_deposit_prediction_tuning_best_model"
+  local_storage_path: "models/"
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 1
+  log_level: "info"
