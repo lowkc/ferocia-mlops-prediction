@@ -66,13 +66,13 @@ uv run python src/run_training.py
 ### 3. Hyperparameter Tuning
 Hyperparameter tuning uses Optuna to perform multiple studies to find the optimal set of parameters. Define parameters, search spaces, etc. using `confs/tuning.yaml`
 ```bash
-# Run hyperparameter optimization
+# Run hyperparameter optimisation
 uv run python src/run_tuning.py
 
 # Configure tuning in confs/tuning.yaml:
 # - Number of trials
 # - Parameter search space
-# - Optimization metric
+# - Optimisation metric
 ```
 
 ### 4. Deploy Model
@@ -105,19 +105,24 @@ curl -X POST "http://localhost:8000/predict" \
 
 ### Data Preprocessing
 
-The preprocessing pipeline handles:
+The data preprocessing pipeline handles:
 - **Validation**: Checks for missing values and data types
 - **Feature Engineering**:
-  - One-hot encoding for categorical variables
-  - Age binning
-  - Balance categorization
+  - Creates additional features from the current dataset
+  - Handles missing features using imputation (after splitting)
+- **Data Splitting**: splits the data into train and test sets
 - **Output**: Clean, preprocessed data ready for training
 
 Configuration in `confs/preprocess.yaml`:
 ```yaml
-input_path: data/raw/bank.csv
-output_path: preprocessing/preprocessed_data.csv
-validate_data: true
+data:
+  raw_path: "data/raw/dataset.csv"
+  processed_dir: "data/processed"
+  target_column: "y"
+
+preprocessing:
+  handle_missing: true
+  drop_duplicates: true
 ```
 
 ### Model Training
@@ -136,21 +141,16 @@ model:
 train_test_split:
   test_size: 0.2
   random_state: 42
-
-cross_validation:
-  enabled: true
-  n_splits: 5
 ```
 
 Features:
 - Stratified train-test split
-- K-fold cross-validation
 - Comprehensive metrics logging
 - Model persistence in MLflow
 
 ### Hyperparameter Tuning
 
-Optuna-based tuning optimizes:
+Optuna-based tuning optimises:
 - `n_estimators`: Number of boosting rounds
 - `max_depth`: Maximum tree depth
 - `learning_rate`: Step size shrinkage
@@ -162,7 +162,7 @@ Optuna-based tuning optimizes:
 # confs/tuning.yaml
 n_trials: 50
 timeout_seconds: 3600
-study_name: bank_marketing_optimization
+study_name: bank_marketing_optimisation
 ```
 
 ### Model Deployment
@@ -293,7 +293,7 @@ Test Coverage:
 - **Predictor Tests** (19 tests): Model loading, prediction logic
 - **Preprocessing Tests**: Data validation, transformation
 - **Training Tests**: Model training, evaluation
-- **Tuning Tests**: Hyperparameter optimization
+- **Tuning Tests**: Hyperparameter optimisation
 
 Current coverage: **60+ tests passing**
 
