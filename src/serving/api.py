@@ -161,7 +161,7 @@ async def startup_event():
         # Don't fail startup, but predictor will be None
 
 
-@app.get("/", response_model=Dict[str, str])
+@app.get("/")
 async def root():
     """Root endpoint with API information."""
     return {
