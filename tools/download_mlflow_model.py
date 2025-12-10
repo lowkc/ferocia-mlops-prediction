@@ -7,6 +7,8 @@ from pathlib import Path
 import mlflow
 import yaml
 
+from src.utils.config_utils import load_yaml_config
+
 
 def setup_logger() -> logging.Logger:
     """Setup logging configuration.
@@ -35,9 +37,7 @@ def load_deployment_config(config_path: Path) -> dict:
     Returns:
         Dictionary containing deployment configuration.
     """
-    with open(config_path) as f:
-        config = yaml.safe_load(f)
-    return config
+    return load_yaml_config(config_path)
 
 
 def download_model(model_name: str, local_storage_path: Path, logger: logging.Logger) -> None:

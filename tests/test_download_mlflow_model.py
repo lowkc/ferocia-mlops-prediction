@@ -38,13 +38,11 @@ class TestSetupLogger:
         # Create logger with existing handler
         logger = logging.getLogger("download_mlflow_model")
         logger.addHandler(logging.StreamHandler())
-        initial_handler_count = len(logger.handlers)
-
         # Setup logger again
         logger = setup_logger()
 
         # Should have exactly 1 handler (old ones cleared)
-        assert len(initial_handler_count) == 1  # type: ignore[arg-type]
+        assert len(logger.handlers) == 1  # type: ignore[arg-type]
 
 
 class TestLoadDeploymentConfig:
