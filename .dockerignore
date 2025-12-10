@@ -1,0 +1,110 @@
+# --- Python caches & tooling (matches at any depth) ---
+*.pyc
+*.log
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.poetry
+
+# Jupyter Notebook
+.ipynb_checkpoints
+.notebooks/
+notebooks/
+
+# Virtual envs & dotenvs
+.venv/
+venv/
+env/
+.env
+*.env
+
+# Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Packaging/build
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# VCS
+.git
+.gitignore
+.gitattributes
+
+# OS cruft
+.DS_Store
+._.DS_Store
+**/.DS_Store
+**/._.DS_Store
+__MACOSX/
+
+# IDE/editor folders
+node_modules/
+.idea/
+.vscode/
+
+# Secrets/profiles
+.ssh/
+.aws/
+.azure/
+.gcloud/
+.kube/
+.kaggle/
+kaggle.json
+
+# ML/DS artifacts
+mlruns/
+mlartifacts/
+artifacts/
+outputs/
+logs/
+
+# Large data (tune for the repo)
+datasets/
+*.parquet
+*.feather
+*.csv
+*.tsv
+*.joblib
+*.pickle
+*.pt
+*.bin
+wandb/
+tensorboard/
+
+# Compose files don’t need to be in the image
+docker-compose*.yml
+docker-compose*.yaml
+
+# Infra/test bloat (don't COPY from these)
+tests
+infrastructure/azure/**/samples/
+infrastructure/azure/**/tests/
+infrastructure/docker
+services/api/tests/
+
+# Project-local extras (remove if needed them in image)
+backups/
+configs/
+readme-demo.md
+notes.md
+.airflow/
+airflow_dags
+
+# Optional: docs—keep README if Poetry/metadata needs it
+# *.md
+# !README.md
+
+# extra project-specific ignores
+bot/spiders/test_spider.py
+milestones.md
+docker
+.scrapy

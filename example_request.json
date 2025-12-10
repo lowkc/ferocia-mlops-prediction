@@ -1,0 +1,20 @@
+{
+  "age": 56,
+  "balance": 1234,
+  "day": 5,
+  "duration": 261,
+  "campaign": 1,
+  "previous": 0,
+  "total_contacts": 1,
+  "days_since_last_contact": 0,
+  "previous_contact": 0,
+  "default": "no",
+  "housing": "no",
+  "loan": "no",
+  "job": "housemaid",
+  "marital": "married",
+  "education": "secondary",
+  "contact": "telephone",
+  "month": "may",
+  "poutcome": "nonexistent"
+}
