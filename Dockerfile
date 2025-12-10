@@ -29,4 +29,4 @@ ENV PORT=8000
 EXPOSE 8000
 
 # Simple, straightforward command
-CMD ["sh", "-c", "exec uvicorn src.serving.api:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["sh", "-c", "exec uvicorn src.serving.api:app --host 127.0.0.1 --port ${PORT}"]

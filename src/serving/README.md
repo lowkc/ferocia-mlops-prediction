@@ -41,7 +41,7 @@ python -m src.serving.api
 Or using uvicorn directly:
 
 ```bash
-uvicorn src.serving.api:app --host 0.0.0.0 --port 8000 --reload
+uvicorn src.serving.api:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 The API will be available at `http://localhost:8000`.
@@ -174,7 +174,7 @@ model:
   local_storage_path: "models/"
 
 api:
-  host: "0.0.0.0"
+  host: "127.0.0.1"
   port: 8000
   workers: 1
   log_level: "info"

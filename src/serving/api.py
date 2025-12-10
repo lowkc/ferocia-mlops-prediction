@@ -252,7 +252,7 @@ if __name__ == "__main__":
     # Load configuration
     config = load_config()
     api_config = config.get("api", {})
-    host = api_config.get("host", "0.0.0.0")
+    host = api_config.get("host", "127.0.0.1")
     port = api_config.get("port", 8000)
 
     # Run the API

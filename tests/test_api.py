@@ -1,8 +1,7 @@
 """Comprehensive unit tests for FastAPI serving application."""
 
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-import tempfile
+from unittest.mock import Mock, patch
 
 import pytest
 import yaml
@@ -28,7 +27,7 @@ def test_config(tmp_path):
             "local_storage_path": str(tmp_path / "models"),
         },
         "api": {
-            "host": "0.0.0.0",
+            "host": "127.0.0.1",
             "port": 8000,
             "workers": 1,
             "log_level": "info",
@@ -72,7 +71,7 @@ class TestPydanticModels:
             "poutcome": "unknown",
         }
 
-        prediction_input = PredictionInput(**input_data)
+        prediction_input = PredictionInput(**input_data)  # type: ignore[arg-type]
 
         assert prediction_input.age == 35
         assert prediction_input.balance == 1000
@@ -115,7 +114,7 @@ class TestPydanticModels:
         input_data[invalid_field] = invalid_value
 
         with pytest.raises(Exception):  # Pydantic raises ValidationError
-            PredictionInput(**input_data)
+            PredictionInput(**input_data)  # type: ignore[arg-type]
 
     def test_prediction_input_missing_required_field(self):
         """Test PredictionInput with missing required field."""
@@ -125,7 +124,7 @@ class TestPydanticModels:
         }
 
         with pytest.raises(Exception):  # Pydantic raises ValidationError
-            PredictionInput(**input_data)
+            PredictionInput(**input_data)  # type: ignore[arg-type]
 
     def test_prediction_output_valid_data(self):
         """Test PredictionOutput with valid data."""
@@ -135,7 +134,7 @@ class TestPydanticModels:
             "probabilities": {"class_0": 0.25, "class_1": 0.75},
         }
 
-        prediction_output = PredictionOutput(**output_data)
+        prediction_output = PredictionOutput(**output_data)  # type: ignore[arg-type]
 
         assert prediction_output.prediction == 1
         assert prediction_output.probability == 0.75
@@ -145,7 +144,7 @@ class TestPydanticModels:
         """Test HealthResponse with valid data."""
         health_data = {"status": "healthy", "model_loaded": True}
 
-        health_response = HealthResponse(**health_data)
+        health_response = HealthResponse(**health_data)  # type: ignore[arg-type]
 
         assert health_response.status == "healthy"
         assert health_response.model_loaded is True
@@ -154,7 +153,7 @@ class TestPydanticModels:
         """Test ModelInfoResponse with valid data."""
         info_data = {"model_name": "test_model", "model_path": "/path/to/model.pkl"}
 
-        model_info = ModelInfoResponse(**info_data)
+        model_info = ModelInfoResponse(**info_data)  # type: ignore[arg-type]
 
         assert model_info.model_name == "test_model"
         assert model_info.model_path == "/path/to/model.pkl"

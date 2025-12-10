@@ -1,7 +1,7 @@
 """Comprehensive unit tests for ModelPredictor class."""
 
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 import logging
 
 import joblib
@@ -131,7 +131,7 @@ class TestModelPredictorPredict:
     def test_predict_success(self, mock_joblib_load, tmp_path):
         """Test successful prediction with valid input."""
         mock_joblib_load.return_value = self.mock_model
-        
+
         model_path = tmp_path / "model.pkl"
         model_path.touch()
 
@@ -176,7 +176,7 @@ class TestModelPredictorPredict:
     def test_predict_returns_correct_values(self, mock_joblib_load, tmp_path):
         """Test that predict returns correct prediction values."""
         mock_joblib_load.return_value = self.mock_model
-        
+
         model_path = tmp_path / "model.pkl"
         model_path.touch()
 
@@ -202,7 +202,7 @@ class TestModelPredictorPredict:
     def test_predict_converts_input_to_dataframe(self, mock_joblib_load, tmp_path):
         """Test that predict converts input dict to DataFrame."""
         mock_joblib_load.return_value = self.mock_model
-        
+
         model_path = tmp_path / "model.pkl"
         model_path.touch()
 
@@ -240,7 +240,7 @@ class TestModelPredictorPredict:
     def test_predict_logs_info(self, mock_joblib_load, tmp_path):
         """Test that predict logs appropriate messages."""
         mock_joblib_load.return_value = self.mock_model
-        
+
         model_path = tmp_path / "model.pkl"
         model_path.touch()
 
@@ -286,7 +286,9 @@ class TestModelPredictorPredict:
         ],
     )
     @patch("src.serving.predictor.joblib.load")
-    def test_predict_various_outputs(self, mock_joblib_load, tmp_path, prediction, probabilities, expected):
+    def test_predict_various_outputs(
+        self, mock_joblib_load, tmp_path, prediction, probabilities, expected
+    ):
         """Test predict with various model outputs."""
         mock_model = Mock()
         mock_model.predict = Mock(return_value=np.array([prediction]))
@@ -316,9 +318,7 @@ class TestModelPredictorIntegration:
         from sklearn.linear_model import LogisticRegression
 
         # Create a simple pipeline
-        pipeline = Pipeline(
-            [("scaler", StandardScaler()), ("classifier", LogisticRegression())]
-        )
+        pipeline = Pipeline([("scaler", StandardScaler()), ("classifier", LogisticRegression())])
 
         # Create sample training data
         X_train = pd.DataFrame({"feature1": [1, 2, 3, 4], "feature2": [10, 20, 30, 40]})
@@ -348,6 +348,7 @@ class TestModelPredictorIntegration:
         assert 0 <= result["probability"] <= 1
         assert 0 <= result["probabilities"]["class_0"] <= 1
         assert 0 <= result["probabilities"]["class_1"] <= 1
-        assert abs(
-            result["probabilities"]["class_0"] + result["probabilities"]["class_1"] - 1.0
-        ) < 0.01
+        assert (
+            abs(result["probabilities"]["class_0"] + result["probabilities"]["class_1"] - 1.0)
+            < 0.01
+        )

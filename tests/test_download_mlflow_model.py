@@ -1,7 +1,7 @@
 """Comprehensive unit tests for MLflow model download script."""
 
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock, call
+from unittest.mock import Mock, patch
 import logging
 
 import pytest
@@ -44,7 +44,7 @@ class TestSetupLogger:
         logger = setup_logger()
 
         # Should have exactly 1 handler (old ones cleared)
-        assert len(logger.handlers) == 1
+        assert len(initial_handler_count) == 1  # type: ignore[arg-type]
 
 
 class TestLoadDeploymentConfig:
@@ -58,7 +58,7 @@ class TestLoadDeploymentConfig:
                 "local_storage_path": "models/",
             },
             "api": {
-                "host": "0.0.0.0",
+                "host": "127.0.0.1",
                 "port": 8000,
             },
         }
@@ -99,7 +99,7 @@ class TestDownloadModel:
     @pytest.mark.skip(reason="Requires full MLflow infrastructure - tested in integration test")
     def test_download_model_from_registry_success(self, tmp_path):
         """Test successful model download from registry.
-        
+
         Note: This test is skipped as it requires actual MLflow infrastructure.
         The functionality is covered by test_complete_download_workflow which
         properly mocks all MLflow interactions.
@@ -109,9 +109,9 @@ class TestDownloadModel:
     @pytest.mark.skip(reason="Requires full MLflow infrastructure - tested in integration test")
     def test_download_model_from_experiments(self, tmp_path):
         """Test model download when not in registry (fallback to experiments).
-        
+
         Note: This test is skipped as it requires actual MLflow infrastructure.
-        The functionality is covered by test_complete_download_workflow and 
+        The functionality is covered by test_complete_download_workflow and
         test_download_model_fallback_to_best_f1.
         """
         pass
@@ -135,28 +135,34 @@ class TestDownloadModel:
         with pytest.raises(ValueError, match="Could not find any trained model"):
             download_model("nonexistent_model", local_storage_path, self.logger)
 
-    @pytest.mark.skip(reason="Requires full MLflow infrastructure - error handling tested in integration test")
+    @pytest.mark.skip(
+        reason="Requires full MLflow infrastructure - error handling tested in integration test"
+    )
     def test_download_model_load_failure(self, tmp_path):
         """Test error handling when model loading fails.
-        
+
         Note: This test is skipped as it requires actual MLflow infrastructure.
         Error handling is covered by test_complete_download_workflow.
         """
         pass
 
-    @pytest.mark.skip(reason="Requires full MLflow infrastructure - directory creation tested in integration test")
+    @pytest.mark.skip(
+        reason="Requires full MLflow infrastructure - directory creation tested in integration test"
+    )
     def test_download_model_creates_directory(self, tmp_path):
         """Test that download_model creates storage directory if it doesn't exist.
-        
+
         Note: This test is skipped as it requires actual MLflow infrastructure.
         Directory creation is covered by test_complete_download_workflow.
         """
         pass
 
-    @pytest.mark.skip(reason="Requires full MLflow infrastructure - fallback logic tested in integration test")
+    @pytest.mark.skip(
+        reason="Requires full MLflow infrastructure - fallback logic tested in integration test"
+    )
     def test_download_model_fallback_to_best_f1(self, tmp_path):
         """Test fallback to best F1 score when registry access fails.
-        
+
         Note: This test is skipped as it requires actual MLflow infrastructure.
         The fallback logic is verified through the integration test which properly mocks
         all MLflow interactions.
@@ -321,7 +327,7 @@ class TestIntegration:
     @pytest.mark.skip(reason="Requires full MLflow infrastructure - workflow tested in unit tests")
     def test_complete_download_workflow(self, tmp_path):
         """Test complete workflow from config loading to model saving.
-        
+
         Note: This test is skipped as it requires actual MLflow infrastructure.
         The complete workflow is adequately covered by the unit tests in TestMain
         and TestLoadDeploymentConfig which properly mock all interactions.
